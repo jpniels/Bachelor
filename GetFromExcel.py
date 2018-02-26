@@ -2,18 +2,18 @@ import time
 import openpyxl
 import xlrd
 import MySQLdb
-print "hej"
+print ("hej")
 from openpyxl import load_workbook
 book = xlrd.open_workbook("C:\Users\Jonas\Desktop\Data_pjat2.xlsx")
-print book.sheet_names()
+print (book.sheet_names())
 
 sheet = book.sheet_by_name("Ark2")
-print "opening file"
+print ("opening file")
 
-print"after sheet"
+print ("after sheet")
 
 database = MySQLdb.connect( host = "localhost", user = "root", passwd = "", db = "bachelor")
-print"connected"
+print ("connected")
 cursor = database.cursor()
 
 query  = """INSERT INTO data (Floor, Room, SensorType, Modality, Unit, Reading, TimeInMiliseconds) VAlUES (%s,%s,%s,%s,%s,%s,%s)"""

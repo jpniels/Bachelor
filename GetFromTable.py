@@ -1,9 +1,11 @@
-from tarfile import _data
+
 
 import MySQLdb, matplotlib.pyplot as plt
 
+
+
 database = MySQLdb.connect( host = "localhost", user = "root", passwd = "", db = "bachelor")
-cursor = database.cursor();
+cursor = database.cursor()
 
 
 
@@ -36,6 +38,6 @@ milisecondsToSeconds(time)
 
 plt.scatter(time, reading)
 plt.show()
-print databaseTuple[0]
-print len(time)
-print time[0]
+print (databaseTuple[0])
+print (len(time))
+print (time[0])
