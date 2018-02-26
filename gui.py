@@ -115,6 +115,7 @@ class LoginWindow(QMainWindow):
     #Login Window
     def __init__(self):
         super().__init__()
+        self.title = 'Bachelor Project'
         self.mainWindow = App()
         #Layout Styling
         centralWidget = QWidget()   
@@ -133,6 +134,7 @@ class LoginWindow(QMainWindow):
         #Login Form
         self.uName = QLineEdit(self)
         self.pWord = QLineEdit(self)
+        self.pWord.setEchoMode(QLineEdit.Password)
         loginBtn = QPushButton('Login', self)
         loginBtn.clicked.connect(self.loginHandler)
         layout = QVBoxLayout()
