@@ -7,7 +7,22 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
  
 class App(QMainWindow):
+    #Application Stylesheet
+    def mainStyle(self):
+        self.setStyleSheet("""
+        .QWidget {
+            background-color: #999;
+
+        }
+
+        .QTextEdit{
+            background-color: #fff;
+            color: #f5f5f5;
+            border: 1px #9e9e9e solid;
+        }
+        """)
  
+    #Global initialization
     def __init__(self):
         super().__init__()
         self.title = 'Bachelor Project'
@@ -15,33 +30,17 @@ class App(QMainWindow):
         self.top = 10
         self.width = 640
         self.height = 400
-        self.initUI()
- 
-    def initUI(self):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        self.login()
+        self.mainStyle()
+        self.mainWindow()
 
-    def login(self):
-        centralWidget = QWidget(self)          
-        self.setCentralWidget(centralWidget)   
- 
-        gridLayout = QGridLayout(self)     
-        centralWidget.setLayout(gridLayout)
-
-        label = QLabel(self)
-        label.resize(275, 73)
-        pixmap = QPixmap('/home/seb/Documents/Bachelor/SDU.png')
-        pixmap = pixmap.scaled(275, 73)
-        label.setPixmap(pixmap) 
-        #label.setStyleSheet("QLabel {background-color: red;}")
-
-        gridLayout.addWidget(label, 0, 0, Qt.AlignCenter)
-    
-    def coolwindow(self):
+    #Main Window
+    def mainWindow(self):
         m = PlotCanvas(self, width=5, height=4)
         m.move(0,0)
-        #Menu
+
+        #Global Menu
         mainMenu = self.menuBar() 
         fileMenu = mainMenu.addMenu('File')
         editMenu = mainMenu.addMenu('Edit')
@@ -50,7 +49,7 @@ class App(QMainWindow):
         toolsMenu = mainMenu.addMenu('Tools')
         helpMenu = mainMenu.addMenu('Help')
 
-        #FILE MENU
+        #File Menu
         openFileButton = QAction('Open File', self)
         openFileButton.setShortcut('Ctrl+O')
         openFileButton.triggered.connect(self.openFile)
@@ -61,7 +60,7 @@ class App(QMainWindow):
         exitButton.triggered.connect(self.close)
         fileMenu.addAction(exitButton)
 
-        #EDIT MENU
+        #Edit Menu
         undoButton = QAction('Undo', self)
         undoButton.setShortcut('Ctrl+Z')
         editMenu.addAction(undoButton)
@@ -70,24 +69,26 @@ class App(QMainWindow):
         redoButton.setShortcut('Ctrl+Y')
         editMenu.addAction(redoButton)
 
-        #VIEW MENU
+        #View Menu
         somethingButton = QAction('View Something', self)
         viewMenu.addAction(somethingButton)
 
-        #TOOLS MENU
+        #Tools Menu
         globalSettingsButton = QAction('Global Settings', self)
         toolsMenu.addAction(globalSettingsButton)
 
-        #HELP MENU
-        documentationButton = QAction('Documentation', self)
+        #Help Menu
+        documentationButton = QAction('Documentation', self )
         helpMenu.addAction(documentationButton)
         aboutButton = QAction('About', self)
         aboutButton.triggered.connect(self.about)
         helpMenu.addAction(aboutButton)
 
+    #About Function
     def about(self):
-        QMessageBox.about(self, "About", "Hej \n \n Sebastian Nørgaard, Jonas Phillip Nielsen")
+        QMessageBox.about(self, "About", "Program made by: \n \n Sebastian Nørgaard \n Jonas Phillip Nielsen")
 
+    #Open File Function
     def openFile(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
@@ -95,9 +96,11 @@ class App(QMainWindow):
         if fileName:
             print(fileName)
     
+    #Settings Function
     def globalSettings(self):
         print('hej')
 
+    #Global CloseEvent function
     def closeEvent(self, event):
         reply = QMessageBox.question(self, 'Quit Dialog',
             "\n Are you sure to quit?", QMessageBox.Yes | 
@@ -108,18 +111,54 @@ class App(QMainWindow):
         else:
             event.ignore()  
 
-class PlotCanvas(FigureCanvas):
+class LoginWindow(QMainWindow):
+    #Login Window
+    def __init__(self):
+        super().__init__()
+        self.mainWindow = App()
+        #Layout Styling
+        centralWidget = QWidget()   
+        self.setFixedSize(300,200)       
+        self.setCentralWidget(centralWidget)   
+        gridLayout = QGridLayout()   
+        centralWidget.setLayout(gridLayout)
+
+        #Login Image
+        label = QLabel(self)
+        label.resize(275, 73)
+        pixmap = QPixmap('SDU.png')
+        pixmap = pixmap.scaled(275, 73)
+        label.setPixmap(pixmap) 
  
-    def __init__(self, parent=None, width=3, height=5, dpi=50):
+        #Login Form
+        
+        uName = QLineEdit(self)
+        pWord = QLineEdit(self)
+        loginBtn = QPushButton('Login', self)
+        loginBtn.clicked.connect(self.loginHandler)
+        layout = QVBoxLayout()
+        
+        layout.addWidget(uName)
+        layout.addWidget(pWord)
+        layout.addWidget(loginBtn)
+
+        #Add elements to Grid Layout
+        gridLayout.addWidget(label, 0, 0, Qt.AlignCenter)
+        gridLayout.addItem(layout, 1, 0, Qt.AlignCenter)
+    
+    def loginHandler(self):
+        self.mainWindow.show()
+        self.close()
+    
+class PlotCanvas(FigureCanvas):
+    def __init__(self, parent=None, width=3, height=5, dpi=50): 
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.axes = fig.add_subplot(111)
  
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
  
-        FigureCanvas.setSizePolicy(self,
-                QSizePolicy.Expanding,
-                QSizePolicy.Expanding)
+        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
         self.plot()
  
@@ -133,6 +172,6 @@ class PlotCanvas(FigureCanvas):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = App()
+    ex = LoginWindow()
     ex.show()
     sys.exit(app.exec_())
