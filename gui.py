@@ -86,7 +86,7 @@ class App(QMainWindow):
 
     #About Function
     def about(self):
-        QMessageBox.about(self, "About", "Program made by: \n \n Sebastian Nørgaard \n Jonas Phillip Nielsen")
+        QMessageBox.information(self, "About", "Version: 1.0.0.0.0.0.0.0.1 \n Program made by: \n \n Sebastian Nørgaard \n Jonas Phillip Nielsen \n ")
 
     #Open File Function
     def openFile(self):
@@ -127,28 +127,34 @@ class LoginWindow(QMainWindow):
         label = QLabel(self)
         label.resize(275, 73)
         pixmap = QPixmap('SDU.png')
-        pixmap = pixmap.scaled(275, 73)
+        pixmap = pixmap.scaled(179, 50)
         label.setPixmap(pixmap) 
  
         #Login Form
-        
-        uName = QLineEdit(self)
-        pWord = QLineEdit(self)
+        self.uName = QLineEdit(self)
+        self.pWord = QLineEdit(self)
         loginBtn = QPushButton('Login', self)
         loginBtn.clicked.connect(self.loginHandler)
         layout = QVBoxLayout()
-        
-        layout.addWidget(uName)
-        layout.addWidget(pWord)
+        layout.addWidget(self.uName)
+        layout.addWidget(self.pWord)
         layout.addWidget(loginBtn)
 
         #Add elements to Grid Layout
         gridLayout.addWidget(label, 0, 0, Qt.AlignCenter)
         gridLayout.addItem(layout, 1, 0, Qt.AlignCenter)
     
+    #Handle Login Button
     def loginHandler(self):
-        self.mainWindow.show()
-        self.close()
+        if (self.uName.text() == 'foo' and
+            self.pWord.text() == 'bar'):
+            self.mainWindow.show()
+            self.close()
+        else:
+            QMessageBox.warning(
+                self, 'Error', 'Bad username or password')
+        
+        
     
 class PlotCanvas(FigureCanvas):
     def __init__(self, parent=None, width=3, height=5, dpi=50): 
