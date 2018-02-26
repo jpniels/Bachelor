@@ -28,8 +28,8 @@ class App(QMainWindow):
         self.title = 'Bachelor Project'
         self.left = 10
         self.top = 10
-        self.width = 640
-        self.height = 400
+        self.width = 600
+        self.height = 600
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.mainStyle()
@@ -37,8 +37,8 @@ class App(QMainWindow):
 
     #Main Window
     def mainWindow(self):
-        m = PlotCanvas(self, width=5, height=4)
-        m.move(0,0)
+        m = PlotCanvas(self, width=6, height=4)
+        m.move(10,10)
 
         #Global Menu
         mainMenu = self.menuBar() 
@@ -112,6 +112,19 @@ class App(QMainWindow):
             event.ignore()  
 
 class LoginWindow(QMainWindow):
+    #Login Stylesheet
+    def loginStyle(self):
+        self.setStyleSheet("""
+        .QPushButton {
+            background-color: #1AB186;
+            height: 25px;
+        }
+        .QLineEdit {
+            background-color: #fff;
+            height: 25px;
+        }
+        """)
+ 
     #Login Window
     def __init__(self):
         super().__init__()
@@ -119,10 +132,11 @@ class LoginWindow(QMainWindow):
         self.mainWindow = App()
         #Layout Styling
         centralWidget = QWidget()   
-        self.setFixedSize(300,200)       
+        self.setFixedSize(320,200)       
         self.setCentralWidget(centralWidget)   
         gridLayout = QGridLayout()   
         centralWidget.setLayout(gridLayout)
+        self.loginStyle()
 
         #Login Image
         label = QLabel(self)
@@ -133,7 +147,9 @@ class LoginWindow(QMainWindow):
  
         #Login Form
         self.uName = QLineEdit(self)
+        self.uName.setPlaceholderText('Username')
         self.pWord = QLineEdit(self)
+        self.pWord.setPlaceholderText('Password')
         self.pWord.setEchoMode(QLineEdit.Password)
         loginBtn = QPushButton('Login', self)
         loginBtn.clicked.connect(self.loginHandler)
@@ -159,23 +175,34 @@ class LoginWindow(QMainWindow):
         
     
 class PlotCanvas(FigureCanvas):
-    def __init__(self, parent=None, width=3, height=5, dpi=50): 
+    #Plot Definition
+    def __init__(self, parent=None, width=5, height=2, dpi=100): 
+        #Plot styling
+        plt.style.use('fivethirtyeight')
+        plt.rcParams['font.family'] = 'serif'
+        plt.rcParams['font.serif'] = 'Ubuntu'
+        plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+        plt.rcParams['font.size'] = 10
+        plt.rcParams['axes.labelsize'] = 10
+        plt.rcParams['axes.labelweight'] = 'bold'
+        plt.rcParams['xtick.labelsize'] = 8
+        plt.rcParams['ytick.labelsize'] = 8
+        plt.rcParams['legend.fontsize'] = 10
+        plt.rcParams['figure.titlesize'] = 12
+
+        #Plot initialize
         fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
- 
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
- 
-        FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
         self.plot()
- 
- 
+        
     def plot(self):
-        data = [random.random() for i in range(25)]
-        ax = self.figure.add_subplot(111)
-        ax.plot(data, 'r-')
-        #ax.set_title('PyQt Matplotlib Example')
+        data = [random.randint(0,20) for i in range(20)]
+        data2 = [random.randint(8,12) for i in range(20)]
+        ax = self.figure.add_subplot(1, 1, 1)
+        ax.plot(data, 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
+        ax.plot(data2, 'r-', linewidth=1, linestyle='-', label='Testing', color='orange')
+        ax.set_title('Testing some plot settings....')
         self.draw()
 
 if __name__ == '__main__':
