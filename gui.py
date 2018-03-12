@@ -28,17 +28,45 @@ class App(QMainWindow):
         self.title = 'Bachelor Project'
         self.left = 10
         self.top = 10
-        self.width = 600
+        self.width = 1000
         self.height = 600
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.mainStyle()
         self.mainWindow()
+        
 
     #Main Window
     def mainWindow(self):
-        m = PlotCanvas(self, width=6, height=4)
-        m.move(10,10)
+        #Window itself
+        m = PlotCanvas(self, width=10, height=6)
+        comboBox = QComboBox(self)
+        comboBox.addItem("motif")
+        comboBox.addItem("Windows")
+        comboBox.addItem("cde")
+        comboBox.addItem("Plastique")
+        comboBox.addItem("Cleanlooks")
+        comboBox.addItem("windowsvista")
+        comboBox.move(50, 340)
+
+        sld = QSlider(Qt.Horizontal, self)
+        sld.setFocusPolicy(Qt.StrongFocus)
+        sld.setGeometry(60, 40, 100, 30)
+        sld.setTickPosition(QSlider.TicksBothSides)
+        sld.setTickInterval(10)
+        sld.setSingleStep(1)
+        sld.move(50, 300)
+
+        b1 = QRadioButton("Detect Outliers", self)
+        b1.setChecked(True)
+        b1.move(50, 370)
+
+        items = QDockWidget("Dockable", self)
+        listWidget = QListWidget()
+        listWidget.addItem("item1")
+        listWidget.addItem("item2")
+        listWidget.addItem("item3")
+        listWidget.move(50,450)
 
         #Global Menu
         mainMenu = self.menuBar() 
@@ -109,7 +137,7 @@ class App(QMainWindow):
         if reply == QMessageBox.Yes:
             event.accept()
         else:
-            event.ignore()  
+            event.ignore()
 
 class LoginWindow(QMainWindow):
     #Login Stylesheet
@@ -171,11 +199,8 @@ class LoginWindow(QMainWindow):
         else:
             QMessageBox.warning(
                 self, 'Error', 'Bad username or password')
-        
-        
     
 class PlotCanvas(FigureCanvas):
-    #Plot Definition
     def __init__(self, parent=None, width=5, height=2, dpi=100): 
         #Plot styling
         plt.style.use('fivethirtyeight')
@@ -195,18 +220,32 @@ class PlotCanvas(FigureCanvas):
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
         self.plot()
-        
+        self.plot2()
+
+    #Plotting data
     def plot(self):
         data = [random.randint(0,20) for i in range(20)]
         data2 = [random.randint(8,12) for i in range(20)]
-        ax = self.figure.add_subplot(1, 1, 1)
+        ax = self.figure.add_subplot(2, 2, 2)
         ax.plot(data, 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
         ax.plot(data2, 'r-', linewidth=1, linestyle='-', label='Testing', color='orange')
-        ax.set_title('Testing some plot settings....')
+        ax.set_title('Plot 1')
         self.draw()
 
+    #Plotting data2
+    def plot2(self):
+        data = [random.randint(0,20) for i in range(20)]
+        data2 = [random.randint(8,12) for i in range(20)]
+        ax = self.figure.add_subplot(2, 2, 1)
+        ax.plot(data, 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
+        ax.plot(data2, 'r-', linewidth=1, linestyle='-', label='Testing', color='orange')
+        ax.set_title('Plot 2')
+        self.draw()
+
+#Launcher
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setStyle(QStyleFactory.create('Fusion'))
     ex = LoginWindow()
     ex.show()
     sys.exit(app.exec_())
