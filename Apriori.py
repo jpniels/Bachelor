@@ -22,14 +22,17 @@ def scanD(dataset, candidates, min_support):
     "Returns all candidates that meets a minimum support level"
     sscnt = {}
     for tid in dataset:
+        print "tid :", tid
         for can in candidates:
+            print "can: " , can
             if can.issubset(tid):
                 sscnt.setdefault(can, 0)
                 sscnt[can] += 1
-
+    print "sscnt: " , sscnt
     num_items = float(len(dataset))
     retlist = []
     support_data = {}
+    print "support data: " , support_data
     for key in sscnt:
         support = sscnt[key] / num_items
         if support >= min_support:
@@ -67,4 +70,9 @@ def apriori(dataset, minsupport=0.5):
         L.append(Lk)
         k += 1
 
-    return L, support_data
+    print L, support_data
+
+
+dataset = load_dataset()
+print len(dataset)
+apriori(dataset, 0.7)

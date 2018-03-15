@@ -2,16 +2,16 @@ import time
 import openpyxl
 import xlrd
 import MySQLdb
-print ("hej")
+
 from openpyxl import load_workbook
-book = xlrd.open_workbook("C:\Users\Jonas\Desktop\Data_pjat2.xlsx")
+book = xlrd.open_workbook("C:/Users/Jonas/Desktop/Data_pjat2.xlsx")
 print (book.sheet_names())
 
 sheet = book.sheet_by_name("Ark2")
 print ("opening file")
 
 print ("after sheet")
-
+P
 database = MySQLdb.connect( host = "localhost", user = "root", passwd = "", db = "bachelor")
 print ("connected")
 cursor = database.cursor()

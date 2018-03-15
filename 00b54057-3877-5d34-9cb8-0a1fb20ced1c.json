@@ -1,0 +1,147 @@
+{
+    "Metadata": {
+        "Description": "Volume Valve",
+        "InternalDescription": "Volume Valve",
+        "Location": {
+            "Building": "OU44",
+            "City": "Odense",
+            "Floor": "-1",
+            "FloorName": "Basement",
+            "Room": "e22-511-00"
+        },
+        "SESC": {
+            "Description": "OutsFail",
+            "Id": "11%252FEnterpriseserver%252FServers%252FC44_CTS03_AS1%252FModbus%20Master%20Network%252FVE03%20VI1%252FOutsFail",
+            "Name": "VE03%20VI1-OutsFail",
+            "Type": "1",
+            "Unit": "none"
+        },
+        "SensorKey": "VI1",
+        "Service": {
+            "Class": "ventilation",
+            "ClassId": "3",
+            "Flow": "supply"
+        },
+        "SourceName": "Schneider BMS",
+        "Value": {
+            "Unit": "percent"
+        }
+    },
+    "Path": "/C44_CTS03_AS1/11/Enterpriseserver/Servers/C44_CTS03_AS1/Modbus Master Network/VE03 VI1/OutsFail",
+    "Properties": {
+        "ReadingType": "long",
+        "Timezone": "Europe/Copenhagen",
+        "UnitofMeasure": "none"
+    },
+    "Readings": [
+        [
+            1479499457000.0,
+            0.0
+        ],
+        [
+            1479502242000.0,
+            0.0
+        ],
+        [
+            1479730943000.0,
+            0.0
+        ],
+        [
+            1479826954000.0,
+            0.0
+        ],
+        [
+            1479887119000.0,
+            0.0
+        ],
+        [
+            1479918472000.0,
+            0.0
+        ],
+        [
+            1480420190000.0,
+            0.0
+        ],
+        [
+            1480511138000.0,
+            0.0
+        ],
+        [
+            1480606104000.0,
+            0.0
+        ],
+        [
+            1480682473000.0,
+            0.0
+        ],
+        [
+            1481287772000.0,
+            0.0
+        ],
+        [
+            1483379379000.0,
+            0.0
+        ],
+        [
+            1483631233000.0,
+            0.0
+        ],
+        [
+            1485118210000.0,
+            0.0
+        ],
+        [
+            1486489693000.0,
+            0.0
+        ],
+        [
+            1486515954000.0,
+            0.0
+        ],
+        [
+            1486820904000.0,
+            0.0
+        ],
+        [
+            1489001243000.0,
+            0.0
+        ],
+        [
+            1489411974000.0,
+            0.0
+        ],
+        [
+            1489673634000.0,
+            0.0
+        ],
+        [
+            1490011122000.0,
+            0.0
+        ],
+        [
+            1493830323000.0,
+            0.0
+        ],
+        [
+            1498048892000.0,
+            0.0
+        ],
+        [
+            1498733287000.0,
+            0.0
+        ],
+        [
+            1499101737000.0,
+            0.0
+        ],
+        [
+            1502878442000.0,
+            0.0
+        ],
+        [
+            1504187668000.0,
+            0.0
+        ]
+    ],
+    "uuid": "00b54057-3877-5d34-9cb8-0a1fb20ced1c"
+}
