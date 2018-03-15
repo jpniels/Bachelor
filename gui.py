@@ -7,41 +7,68 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
  
 class App(QMainWindow):
+    #Application Stylesheet
+    def mainStyle(self):
+        self.setStyleSheet("""
+        .QWidget {
+            background-color: #999;
+
+        }
+
+        .QTextEdit{
+            background-color: #fff;
+            color: #f5f5f5;
+            border: 1px #9e9e9e solid;
+        }
+        """)
  
+    #Global initialization
     def __init__(self):
         super().__init__()
         self.title = 'Bachelor Project'
         self.left = 10
         self.top = 10
-        self.width = 640
-        self.height = 400
-        self.initUI()
- 
-    def initUI(self):
+        self.width = 1000
+        self.height = 600
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-        self.login()
+        self.mainStyle()
+        self.mainWindow()
+        
 
-    def login(self):
-        centralWidget = QWidget(self)          
-        self.setCentralWidget(centralWidget)   
- 
-        gridLayout = QGridLayout(self)     
-        centralWidget.setLayout(gridLayout)
+    #Main Window
+    def mainWindow(self):
+        #Window itself
+        m = PlotCanvas(self, width=10, height=6)
+        comboBox = QComboBox(self)
+        comboBox.addItem("motif")
+        comboBox.addItem("Windows")
+        comboBox.addItem("cde")
+        comboBox.addItem("Plastique")
+        comboBox.addItem("Cleanlooks")
+        comboBox.addItem("windowsvista")
+        comboBox.move(50, 340)
 
-        label = QLabel(self)
-        label.resize(275, 73)
-        pixmap = QPixmap('/home/seb/Documents/Bachelor/SDU.png')
-        pixmap = pixmap.scaled(275, 73)
-        label.setPixmap(pixmap) 
-        #label.setStyleSheet("QLabel {background-color: red;}")
+        sld = QSlider(Qt.Horizontal, self)
+        sld.setFocusPolicy(Qt.StrongFocus)
+        sld.setGeometry(60, 40, 100, 30)
+        sld.setTickPosition(QSlider.TicksBothSides)
+        sld.setTickInterval(10)
+        sld.setSingleStep(1)
+        sld.move(50, 300)
 
-        gridLayout.addWidget(label, 0, 0, Qt.AlignCenter)
-    
-    def coolwindow(self):
-        m = PlotCanvas(self, width=5, height=4)
-        m.move(0,0)
-        #Menu
+        b1 = QRadioButton("Detect Outliers", self)
+        b1.setChecked(True)
+        b1.move(50, 370)
+
+        items = QDockWidget("Dockable", self)
+        listWidget = QListWidget()
+        listWidget.addItem("item1")
+        listWidget.addItem("item2")
+        listWidget.addItem("item3")
+        listWidget.move(50,450)
+
+        #Global Menu
         mainMenu = self.menuBar() 
         fileMenu = mainMenu.addMenu('File')
         editMenu = mainMenu.addMenu('Edit')
@@ -50,7 +77,7 @@ class App(QMainWindow):
         toolsMenu = mainMenu.addMenu('Tools')
         helpMenu = mainMenu.addMenu('Help')
 
-        #FILE MENU
+        #File Menu
         openFileButton = QAction('Open File', self)
         openFileButton.setShortcut('Ctrl+O')
         openFileButton.triggered.connect(self.openFile)
@@ -61,7 +88,7 @@ class App(QMainWindow):
         exitButton.triggered.connect(self.close)
         fileMenu.addAction(exitButton)
 
-        #EDIT MENU
+        #Edit Menu
         undoButton = QAction('Undo', self)
         undoButton.setShortcut('Ctrl+Z')
         editMenu.addAction(undoButton)
@@ -70,24 +97,26 @@ class App(QMainWindow):
         redoButton.setShortcut('Ctrl+Y')
         editMenu.addAction(redoButton)
 
-        #VIEW MENU
+        #View Menu
         somethingButton = QAction('View Something', self)
         viewMenu.addAction(somethingButton)
 
-        #TOOLS MENU
+        #Tools Menu
         globalSettingsButton = QAction('Global Settings', self)
         toolsMenu.addAction(globalSettingsButton)
 
-        #HELP MENU
-        documentationButton = QAction('Documentation', self)
+        #Help Menu
+        documentationButton = QAction('Documentation', self )
         helpMenu.addAction(documentationButton)
         aboutButton = QAction('About', self)
         aboutButton.triggered.connect(self.about)
         helpMenu.addAction(aboutButton)
 
+    #About Function
     def about(self):
-        QMessageBox.about(self, "About", "Hej \n \n Sebastian Nørgaard, Jonas Phillip Nielsen")
+        QMessageBox.information(self, "About", "Version: 1.0.0.0.0.0.0.0.1 \n Program made by: \n \n Sebastian Nørgaard \n Jonas Phillip Nielsen \n ")
 
+    #Open File Function
     def openFile(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
@@ -95,9 +124,11 @@ class App(QMainWindow):
         if fileName:
             print(fileName)
     
+    #Settings Function
     def globalSettings(self):
         print('hej')
 
+    #Global CloseEvent function
     def closeEvent(self, event):
         reply = QMessageBox.question(self, 'Quit Dialog',
             "\n Are you sure to quit?", QMessageBox.Yes | 
@@ -106,33 +137,115 @@ class App(QMainWindow):
         if reply == QMessageBox.Yes:
             event.accept()
         else:
-            event.ignore()  
+            event.ignore()
 
+class LoginWindow(QMainWindow):
+    #Login Stylesheet
+    def loginStyle(self):
+        self.setStyleSheet("""
+        .QPushButton {
+            background-color: #1AB186;
+            height: 25px;
+        }
+        .QLineEdit {
+            background-color: #fff;
+            height: 25px;
+        }
+        """)
+ 
+    #Login Window
+    def __init__(self):
+        super().__init__()
+        self.title = 'Bachelor Project'
+        self.mainWindow = App()
+        #Layout Styling
+        centralWidget = QWidget()   
+        self.setFixedSize(320,200)       
+        self.setCentralWidget(centralWidget)   
+        gridLayout = QGridLayout()   
+        centralWidget.setLayout(gridLayout)
+        self.loginStyle()
+
+        #Login Image
+        label = QLabel(self)
+        label.resize(275, 73)
+        pixmap = QPixmap('SDU.png')
+        pixmap = pixmap.scaled(179, 50)
+        label.setPixmap(pixmap) 
+ 
+        #Login Form
+        self.uName = QLineEdit(self)
+        self.uName.setPlaceholderText('Username')
+        self.pWord = QLineEdit(self)
+        self.pWord.setPlaceholderText('Password')
+        self.pWord.setEchoMode(QLineEdit.Password)
+        loginBtn = QPushButton('Login', self)
+        loginBtn.clicked.connect(self.loginHandler)
+        layout = QVBoxLayout()
+        layout.addWidget(self.uName)
+        layout.addWidget(self.pWord)
+        layout.addWidget(loginBtn)
+
+        #Add elements to Grid Layout
+        gridLayout.addWidget(label, 0, 0, Qt.AlignCenter)
+        gridLayout.addItem(layout, 1, 0, Qt.AlignCenter)
+    
+    #Handle Login Button
+    def loginHandler(self):
+        if (self.uName.text() == 'foo' and
+            self.pWord.text() == 'bar'):
+            self.mainWindow.show()
+            self.close()
+        else:
+            QMessageBox.warning(
+                self, 'Error', 'Bad username or password')
+    
 class PlotCanvas(FigureCanvas):
- 
-    def __init__(self, parent=None, width=3, height=5, dpi=50):
+    def __init__(self, parent=None, width=5, height=2, dpi=100): 
+        #Plot styling
+        plt.style.use('fivethirtyeight')
+        plt.rcParams['font.family'] = 'serif'
+        plt.rcParams['font.serif'] = 'Ubuntu'
+        plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+        plt.rcParams['font.size'] = 10
+        plt.rcParams['axes.labelsize'] = 10
+        plt.rcParams['axes.labelweight'] = 'bold'
+        plt.rcParams['xtick.labelsize'] = 8
+        plt.rcParams['ytick.labelsize'] = 8
+        plt.rcParams['legend.fontsize'] = 10
+        plt.rcParams['figure.titlesize'] = 12
+
+        #Plot initialize
         fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
- 
         FigureCanvas.__init__(self, fig)
         self.setParent(parent)
- 
-        FigureCanvas.setSizePolicy(self,
-                QSizePolicy.Expanding,
-                QSizePolicy.Expanding)
-        FigureCanvas.updateGeometry(self)
         self.plot()
- 
- 
+        self.plot2()
+
+    #Plotting data
     def plot(self):
-        data = [random.random() for i in range(25)]
-        ax = self.figure.add_subplot(111)
-        ax.plot(data, 'r-')
-        #ax.set_title('PyQt Matplotlib Example')
+        data = [random.randint(0,20) for i in range(20)]
+        data2 = [random.randint(8,12) for i in range(20)]
+        ax = self.figure.add_subplot(2, 2, 2)
+        ax.plot(data, 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
+        ax.plot(data2, 'r-', linewidth=1, linestyle='-', label='Testing', color='orange')
+        ax.set_title('Plot 1')
         self.draw()
 
+    #Plotting data2
+    def plot2(self):
+        data = [random.randint(0,20) for i in range(20)]
+        data2 = [random.randint(8,12) for i in range(20)]
+        ax = self.figure.add_subplot(2, 2, 1)
+        ax.plot(data, 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
+        ax.plot(data2, 'r-', linewidth=1, linestyle='-', label='Testing', color='orange')
+        ax.set_title('Plot 2')
+        self.draw()
+
+#Launcher
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    ex = App()
+    app.setStyle(QStyleFactory.create('Fusion'))
+    ex = LoginWindow()
     ex.show()
     sys.exit(app.exec_())
