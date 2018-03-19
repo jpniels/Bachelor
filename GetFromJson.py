@@ -1,16 +1,21 @@
-import pandas
+import pandas as pd
 
 
 
 def read_file_path(path):
-
-    with open(path, 'r') as f:
-            objects  = pandas.read_json(path)
+    with open(path, 'r'):
+            objects  = pd.read_json(path)
             return objects
 
+data = read_file_path('ou44_gnd.json')
+#data['TimeInMiliseconds'] = pd.to_datetime(data['TimeInMiliseconds'], unit='ms')
+data = data.rename(columns={'TimeInMiliseconds': 'Date'})
+print(data)
 
+def getReadings():
+    readings = data.where(data.Unit == 'degree celcius')
+    return readings.Reading
 
-
-data = read_file_path('e22-601b-0.json')
-
-print(data.columns[2])
+def getTime():
+    time = data.where(data.Unit == 'degree celcius')
+    return time.Date  

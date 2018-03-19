@@ -5,6 +5,7 @@ from PyQt5.QtCore import *
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+import GetFromJson
  
 class App(QMainWindow):
     #Application Stylesheet
@@ -224,11 +225,9 @@ class PlotCanvas(FigureCanvas):
 
     #Plotting data
     def plot(self):
-        data = [random.randint(0,20) for i in range(20)]
-        data2 = [random.randint(8,12) for i in range(20)]
+        #data = [random.randint(0,20) for i in range(20)]
         ax = self.figure.add_subplot(2, 2, 2)
-        ax.plot(data, 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
-        ax.plot(data2, 'r-', linewidth=1, linestyle='-', label='Testing', color='orange')
+        ax.plot(GetFromJson.getTime(), GetFromJson.getReadings(), 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
         ax.set_title('Plot 1')
         self.draw()
 
