@@ -1,30 +1,23 @@
 import pandas as pd
 import json
 
-
-
+#Read JSON file from path
 def read_file_path(path):
     with open(path, 'r'):
             objects = pd.read_json(path)
             return objects
 
 data = read_file_path('ou44_gnd.json')
-#data['TimeInMiliseconds'] = pd.to_datetime(data['TimeInMiliseconds'], unit='ms')
-#data = data.rename(columns={'TimeInMiliseconds': 'Date'})
 
-
-
+#Return the readings
 def getReadings():
-    time = []
-    measurement = []
     readings = data.Readings[2]
-    print(len(readings))
-    for i in range(0, len(readings)):
-        time.append( readings[i][0])
-        measurement.append(readings[i][1])
+    measurement = pd.Series(i[1] for i in readings)
+    return measurement
 
-    return time, measurement
-print(getReadings())
+#Return time of the readings
 def getTime():
-    time = data.where(data.Unit == 'degree celcius')
-    return time.Date  
+    readings = data.Readings[2]
+    time = pd.Series(i[0] for i in readings)
+    time = pd.to_datetime(time, unit='ms')
+    return time
