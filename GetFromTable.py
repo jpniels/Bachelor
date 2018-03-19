@@ -18,7 +18,7 @@ def getCO2(room):
     query = """SELECT Sensortype, TimeInMiliSeconds, Reading, Room
       FROM data WHERE TimeInMiliSeconds
       and data.Sensortype = 'air'
-      and data.Room = """+ room +"""
+      and data.Room = """+ room +""" 
       and data.Unit = 'parts per million'"""
     return query
 
