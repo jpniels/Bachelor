@@ -37,4 +37,8 @@ def setIntervals():
     time = getTime()
     df = pd.DataFrame({'timestamp':time.values, 'readings':readings.values})
     df = df.groupby(pd.Grouper(key='timestamp', freq='12H'))['readings'].mean()
+    print(df.describe())
+    v = pd.cut(df, bins=[17,18,19,20,21,22,23,24,25,26,27,28], labels=['17-18','18-19','19-20','20-21','21-22','22-23','23-24','24-25','25-26','26-27','27-28'])
+    print (pd.get_dummies(v))
     return df
+setIntervals()
