@@ -4,12 +4,21 @@ import json
 #Read JSON file from path
 def read_file_path(path):
     with open(path, 'r'):
-            objects = pd.read_json(path)
-            return objects
+        data = pd.read_json(path)
+    return data
 
 data = read_file_path('ou44_gnd.json')
 
-#Return the readings
+#Get all the rooms from the data
+def getRooms():
+    roomnames = []
+    for i in range(0, len(data)):
+        room = data['Metadata'][i]['Location']['Room']
+        if room not in roomnames:
+            roomnames.append(room)
+    return roomnames
+
+#Return the readings of the data
 def getReadings():
     readings = data.Readings[2]
     measurement = pd.Series(i[1] for i in readings)
@@ -17,7 +26,15 @@ def getReadings():
 
 #Return time of the readings
 def getTime():
-    readings = data.Readings[2]
-    time = pd.Series(i[0] for i in readings)
+    time = data.Readings[2]
+    time = pd.Series(i[0] for i in time)
     time = pd.to_datetime(time, unit='ms')
     return time
+
+#Return dataframe with time and reading intervals
+def setIntervals():
+    readings = getReadings()
+    time = getTime()
+    df = pd.DataFrame({'timestamp':time.values, 'readings':readings.values})
+    df = df.groupby(pd.Grouper(key='timestamp', freq='12H'))['readings'].mean()
+    return df

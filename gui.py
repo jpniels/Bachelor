@@ -35,19 +35,16 @@ class App(QMainWindow):
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.mainStyle()
         self.mainWindow()
-        
 
     #Main Window
     def mainWindow(self):
         #Window itself
         m = PlotCanvas(self, width=10, height=6)
+
+        #Rooms combobox
         comboBox = QComboBox(self)
-        comboBox.addItem("motif")
-        comboBox.addItem("Windows")
-        comboBox.addItem("cde")
-        comboBox.addItem("Plastique")
-        comboBox.addItem("Cleanlooks")
-        comboBox.addItem("windowsvista")
+        for element in GetFromJson.getRooms():
+            comboBox.addItem(element)
         comboBox.move(50, 340)
 
         sld = QSlider(Qt.Horizontal, self)
@@ -123,7 +120,7 @@ class App(QMainWindow):
         options |= QFileDialog.DontUseNativeDialog
         fileName, _ = QFileDialog.getOpenFileName(self,"QFileDialog.getOpenFileName()", "","All Files (*);;Python Files (*.py)", options=options)
         if fileName:
-            print(fileName)
+            GetFromJson.read_file_path(fileName)
     
     #Settings Function
     def globalSettings(self):
