@@ -1,7 +1,9 @@
+import GetFromJson as gfj
 #-*- coding:utf-8 - *-
 def load_dataset():
     "Load the sample dataset."
-    return [[1, 3, 4], [2, 3, 5], [1, 2, 3, 5], [2, 5]]
+    
+    return gfj.getDataframe() 
 
 
 def createC1(dataSet):

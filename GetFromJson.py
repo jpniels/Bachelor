@@ -9,6 +9,10 @@ def read_file_path(path):
 
 data = read_file_path('ou44_gnd.json')
 
+def getDataframe():
+    return setIntervals()
+
+
 #Get all the rooms from the data
 def getRooms():
     roomnames = []
@@ -38,10 +42,12 @@ def setIntervals():
     
     df = pd.DataFrame({'timestamp':time.values, 'readings':readings.values})
     df = df.groupby(pd.Grouper(key='timestamp', freq='12H'))['readings'].mean() #Time intervals with readings mean value
-
+    
     df = pd.cut(df, bins=[17,18,19,20,21,22,23,24,25,26,27,28], labels=['17-18','18-19','19-20','20-21','21-22','22-23','23-24','24-25','25-26','26-27','27-28'])
     #Degrees interval
     return df
+
+print(setIntervals())
 
 #Set interpolation
 def createInterpolation(interval):
@@ -54,6 +60,8 @@ def createInterpolation(interval):
 
     newdf = timerange.union(df.index)
     newdf = df.reindex(newdf)
-    newdf = newdf.interpolate(method="time") 
+    newdf = newdf.interpolate(method="time")
+    print(df.head())
     return newdf
-print(createInterpolation("45Min"))
+
+print(createInterpolation("12H"))
