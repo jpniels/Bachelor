@@ -47,8 +47,6 @@ def setIntervals():
     #Degrees interval
     return df
 
-print(setIntervals())
-
 #Set interpolation
 def createInterpolation(interval):
     readings = getReadings()
@@ -61,7 +59,4 @@ def createInterpolation(interval):
     newdf = timerange.union(df.index)
     newdf = df.reindex(newdf)
     newdf = newdf.interpolate(method="time")
-    print(df.head())
     return newdf
-
-print(createInterpolation("12H"))

@@ -224,7 +224,7 @@ class PlotCanvas(FigureCanvas):
     def plot(self):
         #data = [random.randint(0,20) for i in range(20)]
         ax = self.figure.add_subplot(2, 2, 2)
-        ax.plot(GetFromJson.getTime(), GetFromJson.getReadings(), 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
+        ax.plot(GetFromJson.setIntervals(), 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
         ax.set_title('Plot 1')
         self.draw()
 
