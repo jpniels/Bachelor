@@ -35,17 +35,24 @@ class App(QMainWindow):
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.mainStyle()
         self.mainWindow()
+        #QApplication.installEventFilter(self)
+        
 
     #Main Window
     def mainWindow(self):
         #Window itself
-        m = PlotCanvas(self, width=10, height=6)
+        self.m = PlotCanvas(self, width=10, height=6)
 
         #Rooms combobox
-        comboBox = QComboBox(self)
+        self.roomBox = QComboBox(self)
         for element in GetFromJson.getRooms():
-            comboBox.addItem(element)
-        comboBox.move(50, 340)
+            self.roomBox.addItem(element)
+        self.roomBox.move(50, 340)
+        self.roomBox.currentTextChanged.connect(self.roomBoxChanged)
+        
+
+        self.mediaBox = QComboBox(self)
+        self.mediaBox.move(150, 340)
 
         sld = QSlider(Qt.Horizontal, self)
         sld.setFocusPolicy(Qt.StrongFocus)
@@ -109,7 +116,6 @@ class App(QMainWindow):
         aboutButton = QAction('About', self)
         aboutButton.triggered.connect(self.about)
         helpMenu.addAction(aboutButton)
-
     #About Function
     def about(self):
         QMessageBox.information(self, "About", "Version: 1.0.0.0.0.0.0.0.1 \n Program made by: \n \n Sebastian Nørgaard \n Jonas Phillip Nielsen \n ")
@@ -136,6 +142,12 @@ class App(QMainWindow):
             event.accept()
         else:
             event.ignore()
+
+    def roomBoxChanged(self, text):
+        self.mediaBox.setEnabled(True)
+        self.mediaBox.clear() 
+        for k, v in GetFromJson.getMedias(self.roomBox.currentText()).items():
+            self.mediaBox.addItem(str(v))
 
 class LoginWindow(QMainWindow):
     #Login Stylesheet
@@ -224,7 +236,9 @@ class PlotCanvas(FigureCanvas):
     def plot(self):
         #data = [random.randint(0,20) for i in range(20)]
         ax = self.figure.add_subplot(2, 2, 2)
-        ax.plot(GetFromJson.getDataframe(), 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
+        test = GetFromJson.getMediaIndex('temperature', 'e21-602-0')
+        df = GetFromJson.getDataframe(test)
+        ax.plot(df['timestamp'], df['readings'], 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
         ax.set_title('Plot 1')
         self.draw()
 
