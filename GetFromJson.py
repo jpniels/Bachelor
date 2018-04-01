@@ -10,9 +10,13 @@ data = read_file_path('ou44_gnd.json')
 
 #Get a dataframe with timeintervals and mean readings
 def getDataframe(index):
-    readings = getReadings(index)
-    time = getTime(index)
+    readings = pd.Series()
+    time = pd.Series()
+    for i in range( 0, len(index)):
+        readings = readings.append(getReadings(index[i]))
+        time = time.append(getTime(index[i]))
     df = pd.DataFrame({'timestamp':time.values, 'readings':readings.values})
+    print(df)
     return df
 
 #Get a specified time frequency of the dataframe i.e '45Min'
@@ -41,9 +45,11 @@ def getMedias(room):
 #Return the index of a specified media i.e 'temperature'
 def getMediaIndex(modality, room):
     medias = getMedias(room)
+    keys = []
     for key, val in medias.items():
         if modality == val:
-            return key
+            keys.append(key)
+    return keys
 
 #Return the readings of the data
 def getReadings(index):
@@ -60,12 +66,14 @@ def getTime(index):
 
 #Return dataframe with time and reading intervals
 def setReadingIntervals(df):
-    df = pd.cut(df, bins=[17,18,19,20,21,22,23,24,25,26,27,28, 300, 400, 500, 600, 700, 800], labels=['17-18','18-19','19-20','20-21','21-22','22-23','23-24','24-25','25-26','26-27','27-28', '28-300', '300-400', '400-500', '500-600', '600-700', '700-800'])
+    df = pd.cut(df, bins=[10,18,19,20,21,22,23,24,25,26,27,28, 300, 400, 500, 600, 700, 1500], labels=['10-18','18-19','19-20','20-21','21-22','22-23','23-24','24-25','25-26','26-27','27-28', '28-300', '300-400', '400-500', '500-600', '600-700', '700-1500'])
     return df 
 
 #Return a dataframe with boolean assocation rules
 def getBooleanAssociationRules(co2, temp):
-    df = pd.concat([co2,temp])
+    co2 = co2.to_frame()
+    temp = temp.to_frame()
+    df = co2.merge(temp, left_index=True, right_index=True, how='inner')
     df = pd.get_dummies(df)
     return df
 
@@ -84,13 +92,13 @@ def removeOutliers(df):
     iqr = (df['readings'] > q1) & (df['readings'] < q3)
     return iqr
 
-#test = getMediaIndex('temperature', 'e21-602-0')
-# test2 = getMediaIndex('co2', 'e21-602-0')
-#df = getDataframe(test)
-# df2 = getDataframe(test2)
-# df = getDataframeFreq(df, "45Min")
-# df2 = getDataframeFreq(df2, "45Min")
-# df = setReadingIntervals(df)
-# df2 = setReadingIntervals(df2)
-# df = getBooleanAssociationRules(df, df2)
-#print(df)
+test = getMediaIndex('temperature', 'e21-602-0')
+test2 = getMediaIndex('co2', 'e21-602-0')
+df = getDataframe(test)
+df2 = getDataframe(test2)
+df = getDataframeFreq(df, "3M")
+df2 = getDataframeFreq(df2, "3M")
+df = setReadingIntervals(df)
+df2 = setReadingIntervals(df2)
+df = getBooleanAssociationRules(df, df2)
+print(df)

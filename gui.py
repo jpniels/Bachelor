@@ -34,9 +34,7 @@ class App(QMainWindow):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.mainStyle()
-        self.mainWindow()
-        #QApplication.installEventFilter(self)
-        
+        self.mainWindow()        
 
     #Main Window
     def mainWindow(self):
@@ -50,10 +48,11 @@ class App(QMainWindow):
         self.roomBox.move(50, 340)
         self.roomBox.currentTextChanged.connect(self.roomBoxChanged)
         
-
+        #Media Combobox
         self.mediaBox = QComboBox(self)
         self.mediaBox.move(150, 340)
 
+        #Slider
         sld = QSlider(Qt.Horizontal, self)
         sld.setFocusPolicy(Qt.StrongFocus)
         sld.setGeometry(60, 40, 100, 30)
@@ -62,16 +61,10 @@ class App(QMainWindow):
         sld.setSingleStep(1)
         sld.move(50, 300)
 
+        #Outliers Radiobutton
         b1 = QRadioButton("Detect Outliers", self)
         b1.setChecked(True)
         b1.move(50, 370)
-
-        items = QDockWidget("Dockable", self)
-        listWidget = QListWidget()
-        listWidget.addItem("item1")
-        listWidget.addItem("item2")
-        listWidget.addItem("item3")
-        listWidget.move(50,450)
 
         #Global Menu
         mainMenu = self.menuBar() 
