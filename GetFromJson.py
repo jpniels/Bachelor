@@ -1,4 +1,5 @@
 import pandas as pd
+import apriori as ap
 
 #Read JSON file from path
 def read_file_path(path):
@@ -16,7 +17,6 @@ def getDataframe(index):
         readings = readings.append(getReadings(index[i]))
         time = time.append(getTime(index[i]))
     df = pd.DataFrame({'timestamp':time.values, 'readings':readings.values})
-    print(df)
     return df
 
 #Get a specified time frequency of the dataframe i.e '45Min'
@@ -92,13 +92,14 @@ def removeOutliers(df):
     iqr = (df['readings'] > q1) & (df['readings'] < q3)
     return iqr
 
-test = getMediaIndex('temperature', 'e21-602-0')
-test2 = getMediaIndex('co2', 'e21-602-0')
+test = getMediaIndex('temperature', 'e22-601b-0')
+test2 = getMediaIndex('co2', 'e22-601b-0')
 df = getDataframe(test)
 df2 = getDataframe(test2)
-df = getDataframeFreq(df, "3M")
-df2 = getDataframeFreq(df2, "3M")
+df = getDataframeFreq(df, "2H")
+df2 = getDataframeFreq(df2, "2H")
 df = setReadingIntervals(df)
 df2 = setReadingIntervals(df2)
 df = getBooleanAssociationRules(df, df2)
-print(df)
+df = ap.apriori(df, 0.1)
+print(ap.allConfidence(df, 0.3))

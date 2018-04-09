@@ -1,66 +1,99 @@
-import GetFromJson as gfj
-#-*- coding:utf-8 - *-
-def load_dataset():
-    "Load the sample dataset."
+import numpy as np
+import pandas as pd
+
+def generate_new_combinations(old_combinations):
+    items_types_in_previous_step = np.unique(old_combinations.flatten())
+    for old_combination in old_combinations:
+        max_combination = max(old_combination)
+        for item in items_types_in_previous_step:
+            if item > max_combination:
+                res = tuple(old_combination) + (item,)
+                yield res
+
+#Apriori algorithm calculating the support of the itemsets
+def apriori(df, min_support):
+    X = df.values
+    ary_col_idx = np.arange(X.shape[1])
+    support = (np.sum(X, axis=0) / float(X.shape[0]))
+    support_dict = {1: support[support >= min_support]}
+    itemset_dict = {1: ary_col_idx[support >= min_support].reshape(-1, 1)}
+    max_itemset = 1
+
+    while max_itemset:
+        next_max_itemset = max_itemset + 1
+        combin = generate_new_combinations(itemset_dict[max_itemset])
+        frequent_items = []
+        frequent_items_support = []
+
+        for c in combin:
+            together = X[:, c].all(axis=1)
+            support = together.sum() / len(X)
+            if support >= min_support:
+                frequent_items.append(c)
+                frequent_items_support.append(support)
+
+        if frequent_items:
+            itemset_dict[next_max_itemset] = np.array(frequent_items)
+            support_dict[next_max_itemset] = np.array(frequent_items_support)
+            max_itemset = next_max_itemset
+        else:
+            max_itemset = 0
+  
+    all_res = []
+    for k in sorted(itemset_dict):
+        support = pd.Series(support_dict[k])
+        itemsets = pd.Series([i for i in itemset_dict[k]])
+
+        res = pd.concat((support, itemsets), axis=1)
+        all_res.append(res)
+
+    res_df = pd.concat(all_res)
+    res_df.columns = ['support', 'itemsets']
+    res_df = res_df.reset_index(drop=True)
     
-    return gfj.getDataframe() 
+    return res_df   
+
+def allConfidence(df, threshold):
+    df2 = df.loc[df['itemsets'].str.len() > 1] #create dataframe which contains all values with 2
+    df3 = df.loc[df['itemsets'].str.len() <= 1]
+    ante = []
+    conse = []
+    conf = []
+    for index, row in df2.iterrows(): #going through each element that contains 2 values
+        for index, row2 in df3.iterrows():
+            if (row['itemsets']==row2['itemsets']).any() == True:
+                confvalue = row['support']/row2['support']
+                if confvalue >= threshold:
+                    ante.append(row2['itemsets'])
+                    conse.append(row['itemsets'])
+                    conf.append(confvalue)
+    confDf = pd.DataFrame(list(zip(ante, conse, conf)),columns=['antecedants','consequents', 'confidence'])
+    return confDf
 
 
-def createC1(dataSet):
-    C1 = []
-    for transaction in dataSet:
-        for item in transaction:
-            if not [item] in C1:
-                C1.append([item])
-                
-    C1.sort()
-    return list(map(frozenset, C1))#use frozen set so we
-                            #can use it as a key in a dict 
+# def allConfidence(df, threshold):     
+#     conf = pd.DataFrame({'confidence':[],'rule':[]})
+#     upperMask = df.loc[df['itemsets'].str.len() >1]
+#     lowerMask = df.loc[df['itemsets'].str.len() <=1]
+#     for i in range (0, len(lowerMask)):
+#         valueLMask = lowerMask.get_value(i,'support')
+#         ruleLMask = lowerMask.get_value(i,'itemsets')
+#         for j in range(7, len(upperMask)+6):
+#             valueUMask = upperMask.get_value(j,'support')
+#             ruleUMask = upperMask.get_value(j,'itemsets')
+#             print(type(ruleUMask))
+#             if((ruleLMask==ruleUMask).any() == True):
+#                 if(valueUMask/valueLMask > threshold):
+#                     tempList = str(ruleLMask) + ',' + str(ruleUMask)
+#                     tempConf = pd.DataFrame({'confidence':[valueLMask/valueUMask],'rule':[tempList]})
+#                     conf.append(tempConf)
+#     return conf
+
+# def allLift(df):
 
 
-def scanD(D, Ck, minSupport):
-    ssCnt = {}
-    for tid in D:
-        for can in Ck:
-            if can.issubset(tid):
-                if not can in ssCnt: ssCnt[can]=1
-                else: ssCnt[can] += 1
-    numItems = float(len(D))
-    retList = []
-    supportData = {}
-    for key in ssCnt:
-        support = ssCnt[key]/numItems
-        if support >= minSupport:
-            retList.insert(0,key)
-        supportData[key] = support
-    return retList, supportData
+# def confidence(X, Y):
+#     support(X and Y)/support(X)
 
-
-def aprioriGen(Lk, k): #creates Ck
-    retList = []
-    lenLk = len(Lk)
-    for i in range(lenLk):
-        for j in range(i+1, lenLk): 
-            L1 = list(Lk[i])[:k-2]; L2 = list(Lk[j])[:k-2]
-            L1.sort(); L2.sort()
-            if L1==L2: #if first k-2 elements are equal
-                retList.append(Lk[i] | Lk[j]) #set union
-    return retList
-
-
-def apriori(dataSet, minSupport = 0.5):
-    C1 = createC1(dataSet)
-    D = list(map(set, dataSet))
-    L1, supportData = scanD(D, C1, minSupport)
-    L = [L1]
-    k = 2
-    while (len(L[k-2]) > 0):
-        Ck = aprioriGen(L[k-2], k)
-        Lk, supK = scanD(D, Ck, minSupport)#scan DB to get Lk
-        supportData.update(supK)
-        L.append(Lk)
-        k += 1
-    print (L, supportData)
-
-dataset = load_dataset()
-apriori(dataset, 0.6)
+# def lift(X, Y):
+#     support(X and Y)/(support(X)*support(Y))
