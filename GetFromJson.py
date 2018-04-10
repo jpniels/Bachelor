@@ -7,7 +7,7 @@ def read_file_path(path):
         data = pd.read_json(path)
     return data
 
-data = read_file_path('ou44_gnd.json')
+data = read_file_path('assets/ou44_gnd.json')
 
 #Get a dataframe with timeintervals and mean readings
 def getDataframe(index):
@@ -101,5 +101,5 @@ df2 = getDataframeFreq(df2, "2H")
 df = setReadingIntervals(df)
 df2 = setReadingIntervals(df2)
 df = getBooleanAssociationRules(df, df2)
-print(ap.apriori(df, 0.1))
-#print(ap.allConfidence(df, 0.1))
+df = ap.apriori(df, 0.1)
+#testing: print(ap.allConfidence(df, 0.1))

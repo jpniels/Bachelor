@@ -172,7 +172,7 @@ class LoginWindow(QMainWindow):
         #Login Image
         label = QLabel(self)
         label.resize(275, 73)
-        pixmap = QPixmap('SDU.png')
+        pixmap = QPixmap('assets/SDU.png')
         pixmap = pixmap.scaled(179, 50)
         label.setPixmap(pixmap) 
  
