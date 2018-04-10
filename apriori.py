@@ -53,44 +53,28 @@ def apriori(df, min_support):
     
     return res_df   
 
-def allConfidence(df, threshold):
-    df2 = df.loc[df['itemsets'].str.len() > 1] #create dataframe which contains all values with 2
-    df3 = df.loc[df['itemsets'].str.len() <= 1]
+#calculate the confidence for all values
+def allConfidence(df, min_confidence):
+    df2 = df.loc[df['itemsets'].str.len() > 1] #df with 2 values
+    df3 = df.loc[df['itemsets'].str.len() <= 1] #df with less than 2 values
+
+    #empty arrays for filling up
     ante = []
     conse = []
     conf = []
+    
     for index, row in df2.iterrows(): #going through each element that contains 2 values
-        for index, row2 in df3.iterrows():
-            if (row['itemsets']==row2['itemsets']).any() == True:
-                confvalue = row['support']/row2['support']
-                if confvalue >= threshold:
+        for index, row2 in df3.iterrows(): #go though each element that contains less than 2 values
+            if (row['itemsets']==row2['itemsets']).any() == True: #check if a value is a part of the other
+                confvalue = row['support']/row2['support'] #calculate confidence
+                if confvalue >= min_confidence: #fill arrays if confidence is above min_confidence
                     ante.append(row2['itemsets'])
                     conse.append(row['itemsets'])
                     conf.append(confvalue)
-    confDf = pd.DataFrame(list(zip(ante, conse, conf)),columns=['antecedants','consequents', 'confidence'])
+    confDf = pd.DataFrame(list(zip(ante, conse, conf)),columns=['antecedants','consequents', 'confidence']) #create dataframe
     return confDf
 
-
-# def allConfidence(df, threshold):     
-#     conf = pd.DataFrame({'confidence':[],'rule':[]})
-#     upperMask = df.loc[df['itemsets'].str.len() >1]
-#     lowerMask = df.loc[df['itemsets'].str.len() <=1]
-#     for i in range (0, len(lowerMask)):
-#         valueLMask = lowerMask.get_value(i,'support')
-#         ruleLMask = lowerMask.get_value(i,'itemsets')
-#         for j in range(7, len(upperMask)+6):
-#             valueUMask = upperMask.get_value(j,'support')
-#             ruleUMask = upperMask.get_value(j,'itemsets')
-#             print(type(ruleUMask))
-#             if((ruleLMask==ruleUMask).any() == True):
-#                 if(valueUMask/valueLMask > threshold):
-#                     tempList = str(ruleLMask) + ',' + str(ruleUMask)
-#                     tempConf = pd.DataFrame({'confidence':[valueLMask/valueUMask],'rule':[tempList]})
-#                     conf.append(tempConf)
-#     return conf
-
 # def allLift(df):
-
 
 # def confidence(X, Y):
 #     support(X and Y)/support(X)
