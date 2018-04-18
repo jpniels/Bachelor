@@ -89,7 +89,7 @@ def createInterpolation(df, interval):
 def removeOutliers(df):
     q1 = df['readings'].quantile(0.25)
     q3 = df['readings'].quantile(0.75)
-    iqr = (df['readings'] > q1) & (df['readings'] < q3)
+    iqr = df.loc[(df['readings'] > q1) & (df['readings'] < q3)]
     return iqr
 
 test = getMediaIndex('temperature', 'e22-601b-0')
@@ -102,4 +102,4 @@ df = setReadingIntervals(df)
 df2 = setReadingIntervals(df2)
 df = getBooleanAssociationRules(df, df2)
 df = ap.apriori(df, 0.1)
-#testing: print(ap.allConfidence(df, 0.1))
+print(ap.allLift(df, 0.1))
