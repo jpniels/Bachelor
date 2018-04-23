@@ -1,4 +1,6 @@
 import pandas as pd
+from scipy import stats
+import numpy as np
 import apriori as ap
 
 #Read JSON file from path
@@ -17,6 +19,7 @@ def getDataframe(index):
         readings = readings.append(getReadings(index[i]))
         time = time.append(getTime(index[i]))
     df = pd.DataFrame({'timestamp':time.values, 'readings':readings.values})
+    df = df.sort_values(by=['timestamp'])
     return df
 
 #Get a specified time frequency of the dataframe i.e '45Min'
@@ -87,19 +90,20 @@ def createInterpolation(df, interval):
 
 #Detect outliers using IQR
 def removeOutliers(df):
-    q1 = df['readings'].quantile(0.25)
-    q3 = df['readings'].quantile(0.75)
-    iqr = (df['readings'] > q1) & (df['readings'] < q3)
-    return iqr
+    df = df[(np.abs(stats.zscore(df)) < 3).all(axis=1)]
+    return df
 
 test = getMediaIndex('temperature', 'e22-601b-0')
 test2 = getMediaIndex('co2', 'e22-601b-0')
 df = getDataframe(test)
 df2 = getDataframe(test2)
+print(df)
+#df = removeOutliers(df)
+#df2 = removeOutliers(df2)
 df = getDataframeFreq(df, "2H")
 df2 = getDataframeFreq(df2, "2H")
 df = setReadingIntervals(df)
 df2 = setReadingIntervals(df2)
 df = getBooleanAssociationRules(df, df2)
-df = ap.apriori(df, 0.1)
-#testing: print(ap.allConfidence(df, 0.1))
+df = ap.apriori(df, 0.1) 
+print(ap.allConfidence(df,0.1))

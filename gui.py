@@ -229,9 +229,12 @@ class PlotCanvas(FigureCanvas):
     def plot(self):
         #data = [random.randint(0,20) for i in range(20)]
         ax = self.figure.add_subplot(2, 2, 2)
-        test = GetFromJson.getMediaIndex('temperature', 'e21-602-0')
+        test = GetFromJson.getMediaIndex('temperature', 'e22-601b-0')
+        test2 = GetFromJson.getMediaIndex('co2', 'e22-601b-0')
         df = GetFromJson.getDataframe(test)
+        df2 = GetFromJson.getDataframe(test2)
         ax.plot(df['timestamp'], df['readings'], 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
+        #ax.plot(df2['timestamp'], df2['readings'], 'r-', linewidth=1, linestyle='-', label='Testing', color='orange')
         ax.set_title('Plot 1')
         self.draw()
 

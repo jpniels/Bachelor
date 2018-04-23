@@ -1,57 +1,63 @@
 import numpy as np
 import pandas as pd
 
-def generate_new_combinations(old_combinations):
-    items_types_in_previous_step = np.unique(old_combinations.flatten())
-    for old_combination in old_combinations:
-        max_combination = max(old_combination)
-        for item in items_types_in_previous_step:
-            if item > max_combination:
-                res = tuple(old_combination) + (item,)
+def newCombinations(oldCombos):
+    previousStep = np.unique(oldCombos.flatten())
+    for oldCombi in oldCombos:
+        maxCombi = max(oldCombi)
+        for value in previousStep:
+            if value > maxCombi:
+                res = tuple(oldCombi) + (value,)
                 yield res
 
 #Apriori algorithm calculating the support of the itemsets
-def apriori(df, min_support):
-    X = df.values
-    ary_col_idx = np.arange(X.shape[1])
-    support = (np.sum(X, axis=0) / float(X.shape[0]))
-    support_dict = {1: support[support >= min_support]}
-    itemset_dict = {1: ary_col_idx[support >= min_support].reshape(-1, 1)}
-    max_itemset = 1
+def apriori(df, minSupport):
+    values = df.values
+    index = np.arange(values.shape[1])
+    support = (np.sum(values, axis=0) / float(values.shape[0]))
+    supportDict = {1: support[support >= minSupport]}
+    valuesetDict = {1: index[support >= minSupport].reshape(-1, 1)}
+    maxValueset = 1
 
-    while max_itemset:
-        next_max_itemset = max_itemset + 1
-        combin = generate_new_combinations(itemset_dict[max_itemset])
-        frequent_items = []
-        frequent_items_support = []
+    while maxValueset:
+        newMaxValueset = maxValueset + 1
+        combin = newCombinations(valuesetDict[maxValueset])
+        frequentValues = []
+        frequentValuesSupport = []
 
         for c in combin:
-            together = X[:, c].all(axis=1)
-            support = together.sum() / len(X)
-            if support >= min_support:
-                frequent_items.append(c)
-                frequent_items_support.append(support)
+            combined = values[:, c].all(axis=1)
+            support = combined.sum() / len(values)
+            if support >= minSupport:
+                frequentValues.append(c)
+                frequentValuesSupport.append(support)
 
-        if frequent_items:
-            itemset_dict[next_max_itemset] = np.array(frequent_items)
-            support_dict[next_max_itemset] = np.array(frequent_items_support)
-            max_itemset = next_max_itemset
+        if frequentValues:
+            valuesetDict[newMaxValueset] = np.array(frequentValues)
+            supportDict[newMaxValueset] = np.array(frequentValuesSupport)
+            maxValueset = newMaxValueset
         else:
-            max_itemset = 0
+            maxValueset = 0
   
-    all_res = []
-    for k in sorted(itemset_dict):
-        support = pd.Series(support_dict[k])
-        itemsets = pd.Series([i for i in itemset_dict[k]])
-
-        res = pd.concat((support, itemsets), axis=1)
-        all_res.append(res)
-
-    res_df = pd.concat(all_res)
-    res_df.columns = ['support', 'itemsets']
-    res_df = res_df.reset_index(drop=True)
     
-    return res_df   
+    resultsDataFrame = concatSets(supportDict, valuesetDict)
+    return resultsDataFrame 
+
+def concatSets(supportSet,valueSet):
+    allResults = []
+    for k in sorted(valueSet):
+        support = pd.Series(supportSet[k])
+        valuesets = pd.Series([i for i in valueSet[k]])
+
+        result = pd.concat((support, valuesets), axis=1)
+        allResults.append(result)
+
+    resdf = pd.concat(allResults)
+    resdf.columns = ['support', 'itemsets']
+    resdf = resdf.reset_index(drop=True)
+    
+    return resdf
+    
 
 #calculate the confidence for all values
 def allConfidence(df, min_confidence):
@@ -60,7 +66,7 @@ def allConfidence(df, min_confidence):
 
     #empty arrays for filling up
     ante = []
-    conse = []
+    conse = []      
     conf = []
     
     for index, row in df2.iterrows(): #going through each element that contains 2 values
