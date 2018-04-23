@@ -49,26 +49,14 @@ def concatSets(supportSet,valueSet):
         support = pd.Series(supportSet[k])
         valuesets = pd.Series([i for i in valueSet[k]])
 
-<<<<<<< HEAD
         result = pd.concat((support, valuesets), axis=1)
         allResults.append(result)
 
-    resdf = pd.concat(allResults)
-    resdf.columns = ['support', 'itemsets']
-    resdf = resdf.reset_index(drop=True)
-    
-    return resdf
-    
-=======
-        result = pd.concat((support, itemsets), axis=1)
-        all_res.append(result)
-
-    supportDf = pd.concat(all_res)
+    supportDf = pd.concat(allResults)
     supportDf.columns = ['support', 'itemsets']
     supportDf = supportDf.reset_index(drop=True)
     
     return supportDf   
->>>>>>> df826fd80ef1b2dcb338ac1af55e84448f712645
 
 #Calculate the confidence for all values
 def allConfidence(df, min_confidence):

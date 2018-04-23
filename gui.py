@@ -5,69 +5,18 @@ from PyQt5.QtCore import *
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+import numpy as np
 import GetFromJson
- 
-class App(QMainWindow):
-    #Application Stylesheet
-    def mainStyle(self):
-        self.setStyleSheet("""
-        .QWidget {
-            background-color: #999;
 
-        }
-
-        .QTextEdit{
-            background-color: #fff;
-            color: #f5f5f5;
-            border: 1px #9e9e9e solid;
-        }
-        """)
- 
-    #Global initialization
+#Main Window
+class mainWindow(QMainWindow):
     def __init__(self):
-        super().__init__()
-        self.title = 'Bachelor Project'
-        self.left = 10
-        self.top = 10
-        self.width = 1000
-        self.height = 600
-        self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
-        self.mainStyle()
-        self.mainWindow()        
-
-    #Main Window
-    def mainWindow(self):
-        #Window itself
-        self.m = PlotCanvas(self, width=10, height=6)
-
-        #Rooms combobox
-        self.roomBox = QComboBox(self)
-        for element in GetFromJson.getRooms():
-            self.roomBox.addItem(element)
-        self.roomBox.move(50, 340)
-        self.roomBox.currentTextChanged.connect(self.roomBoxChanged)
-        
-        #Media Combobox
-        self.mediaBox = QComboBox(self)
-        self.mediaBox.move(150, 340)
-
-        #Slider
-        sld = QSlider(Qt.Horizontal, self)
-        sld.setFocusPolicy(Qt.StrongFocus)
-        sld.setGeometry(60, 40, 100, 30)
-        sld.setTickPosition(QSlider.TicksBothSides)
-        sld.setTickInterval(10)
-        sld.setSingleStep(1)
-        sld.move(50, 300)
-
-        #Outliers Radiobutton
-        b1 = QRadioButton("Detect Outliers", self)
-        b1.setChecked(True)
-        b1.move(50, 370)
+        super().__init__(parent=None)
+        self.app_widget = App()
+        self.setCentralWidget(self.app_widget)
 
         #Global Menu
-        mainMenu = self.menuBar() 
+        mainMenu = self.menuBar()
         fileMenu = mainMenu.addMenu('File')
         editMenu = mainMenu.addMenu('Edit')
         viewMenu = mainMenu.addMenu('View')
@@ -109,6 +58,7 @@ class App(QMainWindow):
         aboutButton = QAction('About', self)
         aboutButton.triggered.connect(self.about)
         helpMenu.addAction(aboutButton)
+
     #About Function
     def about(self):
         QMessageBox.information(self, "About", "Version: 1.0.0.0.0.0.0.0.1 \n Program made by: \n \n Sebastian Nørgaard \n Jonas Phillip Nielsen \n ")
@@ -136,11 +86,83 @@ class App(QMainWindow):
         else:
             event.ignore()
 
-    def roomBoxChanged(self, text):
+#Central widget within mainWindow
+class App(QWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.title = 'Bachelor Project'
+        self.left = 10
+        self.top = 10
+        self.width = 1000
+        self.height = 600
+        self.setWindowTitle(self.title)
+        self.setGeometry(self.left, self.top, self.width, self.height)
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle(self.title)
+        self.setGeometry(self.left, self.top, self.width, self.height)
+
+
+        l = QGridLayout(self)
+        self.figure = plt.figure(figsize=(15,5))    
+        self.canvas = FigureCanvas(self.figure)   
+        l.addWidget(self.canvas, 0,0,9,(100-4))
+
+        # self.ylim_top = QLineEdit("1",self)
+        # self.ylim_top.textChanged.connect(self.plot)
+
+        # l.addWidget(self.ylim_top,7,(100-2),1,2)
+
+
+        self.roomBox = QComboBox(self) 
+        for element in GetFromJson.getRooms():
+            self.roomBox.addItem(element)
+        self.roomBox.currentTextChanged.connect(self.roomBoxChanged)
+
+        l.addWidget(self.roomBox, 5, (100-2),1,2)
+
+        self.mediaBox = QComboBox(self)
+        self.mediaBox.currentTextChanged.connect(self.plot)
+        l.addWidget(self.mediaBox, 6, (100-2),1,2)
+
+        self.compute_initial_figure()
+
+    #When a room is selected get the medias and show them
+    def roomBoxChanged(self):
         self.mediaBox.setEnabled(True)
         self.mediaBox.clear() 
         for k, v in GetFromJson.getMedias(self.roomBox.currentText()).items():
             self.mediaBox.addItem(str(v))
+        return self.roomBox.currentText()
+
+    #Dont mess with this shit, just the initial empty plot.. useless
+    def compute_initial_figure(self):
+        axes=self.figure.add_subplot(111)
+        axes.plot(1,1)
+        self.canvas.draw()
+
+    #Plotting the data selected
+    def plot(self):
+        plt.style.use('fivethirtyeight')
+        plt.rcParams['font.family'] = 'serif'
+        plt.rcParams['font.serif'] = 'Ubuntu'
+        plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+        plt.rcParams['font.size'] = 10
+        plt.rcParams['axes.labelsize'] = 10
+        plt.rcParams['axes.labelweight'] = 'bold'
+        plt.rcParams['xtick.labelsize'] = 8
+        plt.rcParams['ytick.labelsize'] = 8
+        plt.rcParams['legend.fontsize'] = 10
+        plt.rcParams['figure.titlesize'] = 12
+        test = GetFromJson.getMediaIndex(self.mediaBox.currentText(), self.roomBox.currentText())
+        df = GetFromJson.getDataframe(test)
+        axes=self.figure.add_subplot(111)
+        axes.cla()
+        axes.plot(df['timestamp'], df['readings'], 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
+        self.canvas.draw()
+
 
 class LoginWindow(QMainWindow):
     #Login Stylesheet
@@ -160,7 +182,7 @@ class LoginWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.title = 'Bachelor Project'
-        self.mainWindow = App()
+        self.mainWindow = mainWindow()
         #Layout Styling
         centralWidget = QWidget()   
         self.setFixedSize(320,200)       
@@ -203,52 +225,7 @@ class LoginWindow(QMainWindow):
             QMessageBox.warning(
                 self, 'Error', 'Bad username or password')
     
-class PlotCanvas(FigureCanvas):
-    def __init__(self, parent=None, width=5, height=2, dpi=100): 
-        #Plot styling
-        plt.style.use('fivethirtyeight')
-        plt.rcParams['font.family'] = 'serif'
-        plt.rcParams['font.serif'] = 'Ubuntu'
-        plt.rcParams['font.monospace'] = 'Ubuntu Mono'
-        plt.rcParams['font.size'] = 10
-        plt.rcParams['axes.labelsize'] = 10
-        plt.rcParams['axes.labelweight'] = 'bold'
-        plt.rcParams['xtick.labelsize'] = 8
-        plt.rcParams['ytick.labelsize'] = 8
-        plt.rcParams['legend.fontsize'] = 10
-        plt.rcParams['figure.titlesize'] = 12
 
-        #Plot initialize
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        FigureCanvas.__init__(self, fig)
-        self.setParent(parent)
-        self.plot()
-        self.plot2()
-
-    #Plotting data
-    def plot(self):
-        #data = [random.randint(0,20) for i in range(20)]
-        ax = self.figure.add_subplot(2, 2, 2)
-        test = GetFromJson.getMediaIndex('temperature', 'e22-601b-0')
-        test2 = GetFromJson.getMediaIndex('co2', 'e22-601b-0')
-        df = GetFromJson.getDataframe(test)
-        df2 = GetFromJson.getDataframe(test2)
-        ax.plot(df['timestamp'], df['readings'], 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
-        #ax.plot(df2['timestamp'], df2['readings'], 'r-', linewidth=1, linestyle='-', label='Testing', color='orange')
-        ax.set_title('Plot 1')
-        self.draw()
-
-    #Plotting data2
-    def plot2(self):
-        data = [random.randint(0,20) for i in range(20)]
-        data2 = [random.randint(8,12) for i in range(20)]
-        ax = self.figure.add_subplot(2, 2, 1)
-        ax.plot(data, 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
-        ax.plot(data2, 'r-', linewidth=1, linestyle='-', label='Testing', color='orange')
-        ax.set_title('Plot 2')
-        self.draw()
-
-#Launcher
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyle(QStyleFactory.create('Fusion'))
