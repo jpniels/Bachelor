@@ -49,6 +49,7 @@ def concatSets(supportSet,valueSet):
         support = pd.Series(supportSet[k])
         valuesets = pd.Series([i for i in valueSet[k]])
 
+<<<<<<< HEAD
         result = pd.concat((support, valuesets), axis=1)
         allResults.append(result)
 
@@ -58,8 +59,18 @@ def concatSets(supportSet,valueSet):
     
     return resdf
     
+=======
+        result = pd.concat((support, itemsets), axis=1)
+        all_res.append(result)
 
-#calculate the confidence for all values
+    supportDf = pd.concat(all_res)
+    supportDf.columns = ['support', 'itemsets']
+    supportDf = supportDf.reset_index(drop=True)
+    
+    return supportDf   
+>>>>>>> df826fd80ef1b2dcb338ac1af55e84448f712645
+
+#Calculate the confidence for all values
 def allConfidence(df, min_confidence):
     df2 = df.loc[df['itemsets'].str.len() > 1] #df with 2 values
     df3 = df.loc[df['itemsets'].str.len() <= 1] #df with less than 2 values
@@ -77,13 +88,36 @@ def allConfidence(df, min_confidence):
                     ante.append(row2['itemsets'])
                     conse.append(row['itemsets'])
                     conf.append(confvalue)
-    confDf = pd.DataFrame(list(zip(ante, conse, conf)),columns=['antecedants','consequents', 'confidence']) #create dataframe
+    confDf = pd.DataFrame(list(zip(ante, conse, conf)),columns=['antecedants','consequents', 'confidence']) #create dataframe with values
     return confDf
 
-# def allLift(df):
+def allLift(df, min_lift):
+    df2 = df.loc[df['itemsets'].str.len() > 1]
+    df3 = df.loc[df['itemsets'].str.len() <= 1]
 
-# def confidence(X, Y):
+    #empty arrays for filling up
+    ante = []
+    conse = []
+    lift = []
+    
+    for index, row in df2.iterrows():
+        for index, row2 in df3.iterrows(): 
+            if (row['itemsets']==row2['itemsets']).any() == True: 
+                for index, row3 in df3.iterrows(): 
+                    testingvalue = np.append(row2['itemsets'], (row3['itemsets']))
+                    if(np.sort(testingvalue) == row['itemsets']).all() == True:
+                        liftvalue =  row['support']/(row2['support']*row3['support'])
+                        if liftvalue >= min_lift: 
+                            ante.append(row2['itemsets'])
+                            conse.append(row3['itemsets'])
+                            lift.append(liftvalue)
+    liftDf = pd.DataFrame(list(zip(ante, conse, lift)),columns=['antecedants','consequents', 'lift'])
+    return liftDf
+
+# def confidence(ante, conse):
+#     create dataframe from the 2 values
+#     allConfidence(newDf)
 #     support(X and Y)/support(X)
 
-# def lift(X, Y):
+# def lift(ante, conse):
 #     support(X and Y)/(support(X)*support(Y))

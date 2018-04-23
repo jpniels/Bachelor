@@ -90,8 +90,15 @@ def createInterpolation(df, interval):
 
 #Detect outliers using IQR
 def removeOutliers(df):
+<<<<<<< HEAD
     df = df[(np.abs(stats.zscore(df)) < 3).all(axis=1)]
     return df
+=======
+    q1 = df['readings'].quantile(0.25)
+    q3 = df['readings'].quantile(0.75)
+    iqr = df.loc[(df['readings'] > q1) & (df['readings'] < q3)]
+    return iqr
+>>>>>>> df826fd80ef1b2dcb338ac1af55e84448f712645
 
 test = getMediaIndex('temperature', 'e22-601b-0')
 test2 = getMediaIndex('co2', 'e22-601b-0')
@@ -105,5 +112,10 @@ df2 = getDataframeFreq(df2, "2H")
 df = setReadingIntervals(df)
 df2 = setReadingIntervals(df2)
 df = getBooleanAssociationRules(df, df2)
+<<<<<<< HEAD
 df = ap.apriori(df, 0.1) 
 print(ap.allConfidence(df,0.1))
+=======
+df = ap.apriori(df, 0.1)
+print(ap.allLift(df, 0.1))
+>>>>>>> df826fd80ef1b2dcb338ac1af55e84448f712645
