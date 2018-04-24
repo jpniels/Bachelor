@@ -28,7 +28,7 @@ def getDataframeFreq(df, freq):
     df = df.resample(freq)['readings'].mean()
    #df = df.groupby(pd.Grouper(key='timestamp', freq=freq))['readings'].mean()
     df = df.dropna()
-    df.to_frame()
+    df = df.to_frame()
     return df
 
 #Get all the rooms from the data

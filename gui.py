@@ -126,7 +126,7 @@ class App(QWidget):
         l.addWidget(self.canvas, 0,0,9,(100-4))
 
         #Room Box
-        self.roomBox = QComboBox(self) 
+        self.roomBox = QComboBox(self)
         for element in GetFromJson.getRooms():
             self.roomBox.addItem(element)
         self.roomBox.currentTextChanged.connect(self.roomBoxChanged)
@@ -134,12 +134,13 @@ class App(QWidget):
 
         #Media Box
         self.mediaBox = QComboBox(self)
-        self.mediaBox.currentTextChanged.connect(self.plot)
+        self.mediaBox.currentTextChanged.connect(self.outlierToggle)
         l.addWidget(self.mediaBox, 2, (100-2),1,2)
 
         #Outliers Radiobutton
         self.outlierBtn = QRadioButton("Detect Outliers", self)
         self.outlierBtn.setChecked(True)
+        self.outlierBtn.toggled.connect(self.outlierToggle)
         l.addWidget(self.outlierBtn, 3, (100-2),1,2)
 
         self.compute_initial_figure()
@@ -147,11 +148,20 @@ class App(QWidget):
     #When a room is selected get the medias and show them
     def roomBoxChanged(self):
         self.mediaBox.setEnabled(True)
-        self.mediaBox.clear() 
+        self.mediaBox.clear()
+        medialist = []
         for k, v in GetFromJson.getMedias(self.roomBox.currentText()).items():
-            self.mediaBox.addItem(str(v))
-        return self.roomBox.currentText()
+            if v not in medialist:
+                medialist.append(v)
+        self.mediaBox.addItems(medialist)
 
+    #Handle Outlier toggle
+    def outlierToggle(self):
+        if self.outlierBtn.isChecked() == True:
+            self.plot()
+        else:
+            print('hej')
+    
     #Dont mess with this shit, just the initial empty plot.. useless
     def compute_initial_figure(self):
         axes=self.figure.add_subplot(111)
@@ -173,10 +183,7 @@ class App(QWidget):
         plt.rcParams['figure.titlesize'] = 12
         test = GetFromJson.getMediaIndex(self.mediaBox.currentText(), self.roomBox.currentText())
         df = GetFromJson.getDataframe(test)
-        df = GetFromJson.getDataframeFreq(df, "1D")
-        df = df.to_frame()
-        df = GetFromJson.removeOutliers(df)
-        df = GetFromJson.removeOutliers(df)
+        df = GetFromJson.getDataframeFreq(df, "1H")
         df = GetFromJson.removeOutliers(df)
         axes=self.figure.add_subplot(111)
         axes.cla()
@@ -245,7 +252,6 @@ class LoginWindow(QMainWindow):
             QMessageBox.warning(
                 self, 'Error', 'Bad username or password')
     
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     app.setStyle(QStyleFactory.create('Fusion'))
