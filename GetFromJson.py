@@ -20,12 +20,15 @@ def getDataframe(index):
         time = time.append(getTime(index[i]))
     df = pd.DataFrame({'timestamp':time.values, 'readings':readings.values})
     df = df.sort_values(by=['timestamp'])
+    df = df.set_index('timestamp')
     return df
 
 #Get a specified time frequency of the dataframe i.e '45Min'
 def getDataframeFreq(df, freq):
-    df = df.groupby(pd.Grouper(key='timestamp', freq=freq))['readings'].mean()
+    df = df.resample(freq)['readings'].mean()
+   #df = df.groupby(pd.Grouper(key='timestamp', freq=freq))['readings'].mean()
     df = df.dropna()
+    df.to_frame()
     return df
 
 #Get all the rooms from the data
@@ -68,9 +71,20 @@ def getTime(index):
     return time
 
 #Return dataframe with time and reading intervals
-def setReadingIntervals(df):
-    df = pd.cut(df, bins=[10,18,19,20,21,22,23,24,25,26,27,28, 300, 400, 500, 600, 700, 1500], labels=['10-18','18-19','19-20','20-21','21-22','22-23','23-24','24-25','25-26','26-27','27-28', '28-300', '300-400', '400-500', '500-600', '600-700', '700-1500'])
-    return df 
+def setReadingIntervals(df, intervals):
+    bins = []
+    labels = []
+    bins.append(df.min())
+
+    incrementValue = (df.max()-df.min())/intervals
+    bins = np.arange(df.min()-1,df.max()+incrementValue/intervals,incrementValue)
+
+    for i in range(0, len(bins)-1):
+        label = "{0:.0f}".format(bins[i]) +'-'+"{0:.0f}".format(bins[i+1])
+        labels.append(label)
+    df = pd.cut(df, bins=bins, labels=labels)
+
+    return df
 
 #Return a dataframe with boolean assocation rules
 def getBooleanAssociationRules(co2, temp):
@@ -89,21 +103,20 @@ def createInterpolation(df, interval):
     return dfWithIntervals
 
 #Detect outliers using IQR
-# def removeOutliers(df):
-#     df_zscore = (df - df.mean())/df.std()
-#     df = df[(np.abs(df_zscore(df)) < 3).all(axis=1)]
-#     return df
+def removeOutliers(df):
+    df = df[df.apply(lambda x: np.abs(x - x.mean()) / x.std() < 3).all(axis=1)]
+    return df
 
 test = getMediaIndex('temperature', 'e22-601b-0')
 test2 = getMediaIndex('co2', 'e22-601b-0')
 df = getDataframe(test)
 df2 = getDataframe(test2)
-#df = removeOutliers(df)
-#df2 = removeOutliers(df2)
 df = getDataframeFreq(df, "2H")
 df2 = getDataframeFreq(df2, "2H")
-df = setReadingIntervals(df)
-df2 = setReadingIntervals(df2)
+#df = removeOutliers(df)
+df = setReadingIntervals(df, 10)
+df2 = setReadingIntervals(df2, 15)
 df = getBooleanAssociationRules(df, df2)
 df = ap.apriori(df, 0.1)
 #print(ap.allConfidence(df,0.1))
+#print(ap.allLift(df, 0.1))

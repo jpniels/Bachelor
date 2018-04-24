@@ -88,7 +88,22 @@ class mainWindow(QMainWindow):
 
 #Central widget within mainWindow
 class App(QWidget):
+    #Application Stylesheet
+    def mainStyle(self):
+        self.setStyleSheet("""
+        .QWidget {
+            background-color: #999;
 
+        }
+
+        .QTextEdit{
+            background-color: #fff;
+            color: #f5f5f5;
+            border: 1px #9e9e9e solid;
+        }
+        """)
+ 
+    #Global initialization
     def __init__(self):
         super().__init__()
         self.title = 'Bachelor Project'
@@ -104,28 +119,28 @@ class App(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
 
-
+        #Gridlayout
         l = QGridLayout(self)
         self.figure = plt.figure(figsize=(15,5))    
         self.canvas = FigureCanvas(self.figure)   
         l.addWidget(self.canvas, 0,0,9,(100-4))
 
-        # self.ylim_top = QLineEdit("1",self)
-        # self.ylim_top.textChanged.connect(self.plot)
-
-        # l.addWidget(self.ylim_top,7,(100-2),1,2)
-
-
+        #Room Box
         self.roomBox = QComboBox(self) 
         for element in GetFromJson.getRooms():
             self.roomBox.addItem(element)
         self.roomBox.currentTextChanged.connect(self.roomBoxChanged)
+        l.addWidget(self.roomBox, 1, (100-2),1,2)
 
-        l.addWidget(self.roomBox, 5, (100-2),1,2)
-
+        #Media Box
         self.mediaBox = QComboBox(self)
         self.mediaBox.currentTextChanged.connect(self.plot)
-        l.addWidget(self.mediaBox, 6, (100-2),1,2)
+        l.addWidget(self.mediaBox, 2, (100-2),1,2)
+
+        #Outliers Radiobutton
+        self.outlierBtn = QRadioButton("Detect Outliers", self)
+        self.outlierBtn.setChecked(True)
+        l.addWidget(self.outlierBtn, 3, (100-2),1,2)
 
         self.compute_initial_figure()
 
@@ -158,9 +173,14 @@ class App(QWidget):
         plt.rcParams['figure.titlesize'] = 12
         test = GetFromJson.getMediaIndex(self.mediaBox.currentText(), self.roomBox.currentText())
         df = GetFromJson.getDataframe(test)
+        df = GetFromJson.getDataframeFreq(df, "1D")
+        df = df.to_frame()
+        df = GetFromJson.removeOutliers(df)
+        df = GetFromJson.removeOutliers(df)
+        df = GetFromJson.removeOutliers(df)
         axes=self.figure.add_subplot(111)
         axes.cla()
-        axes.plot(df['timestamp'], df['readings'], 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
+        axes.plot(df.index.values, df['readings'], 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
         self.canvas.draw()
 
 
