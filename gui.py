@@ -10,10 +10,19 @@ import GetFromJson
 
 #Main Window
 class mainWindow(QMainWindow):
+    #Application Stylesheet
+    def mainStyle(self):
+        self.setStyleSheet("""
+            background-color: #2A3036;
+            color: #FFF;
+        """)
+ 
     def __init__(self):
         super().__init__(parent=None)
+        self.mainStyle()
         self.app_widget = App()
         self.setCentralWidget(self.app_widget)
+        
 
         #Global Menu
         mainMenu = self.menuBar()
@@ -89,17 +98,24 @@ class mainWindow(QMainWindow):
 #Central widget within mainWindow
 class App(QWidget):
     #Application Stylesheet
-    def mainStyle(self):
+    def appStyle(self):
         self.setStyleSheet("""
         .QWidget {
-            background-color: #999;
+            background-color: #2A3036;
 
         }
 
-        .QTextEdit{
-            background-color: #fff;
-            color: #f5f5f5;
-            border: 1px #9e9e9e solid;
+        .QComboBox, .QLineEdit, .QSpinBox{
+            background-color: #434C55;
+            color: #fff;
+            height: 30px;
+            selection-background-color: #FFB36C;
+        }
+        .QHBoxLayout {
+            background-color: white;
+        }
+        .QLabel {
+            color: darkgrey;
         }
         """)
  
@@ -114,34 +130,86 @@ class App(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         self.initUI()
+        self.appStyle()
 
     def initUI(self):
+        #Plot Styling
+        plt.style.use('seaborn-pastel')
+        plt.rcParams['font.family'] = 'serif'
+        plt.rcParams['font.serif'] = 'Ubuntu'
+        plt.rcParams['font.monospace'] = 'Ubuntu Mono'
+        plt.rcParams['font.size'] = 10
+        plt.rcParams['xtick.color'] = '#96A391'
+        plt.rcParams['ytick.color'] = '#96A391'
+        plt.rcParams['axes.labelsize'] = 10
+        plt.rcParams['axes.labelweight'] = 'bold'
+        plt.rcParams['xtick.labelsize'] = 10
+        plt.rcParams['ytick.labelsize'] = 10
+        plt.rcParams['legend.fontsize'] = 10
+        plt.rcParams['figure.titlesize'] = 12
+        plt.rcParams['figure.facecolor'] = '#2A3036'
+        plt.rcParams['axes.edgecolor'] = '#96A391'
+        plt.rcParams['axes.linewidth'] = 1
+        plt.rcParams['axes.facecolor'] = '#2A3036'
+        plt.rcParams['axes.grid'] = True
+        plt.rcParams['grid.color'] = '#343B43'
+
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
-
-        #Gridlayout
         l = QGridLayout(self)
-        self.figure = plt.figure(figsize=(15,5))    
+        self.figure = plt.figure(figsize=(10,5))    
         self.canvas = FigureCanvas(self.figure)   
-        l.addWidget(self.canvas, 0,0,9,(100-4))
+        l.addWidget(self.canvas, 0,0,1,0)
+        subverticallayout = QHBoxLayout()
+        subverticallayout.setSpacing(2)
+        subverticallayout.setAlignment(Qt.AlignCenter)
+        sublayout = QVBoxLayout()
+        sublayout2 = QVBoxLayout()
+        sublayout.setAlignment(Qt.AlignTop)
+        sublayout2.setAlignment(Qt.AlignTop)
 
         #Room Box
+        self.roomBoxlabel = QLabel("Select Room:")
         self.roomBox = QComboBox(self)
         for element in GetFromJson.getRooms():
             self.roomBox.addItem(element)
         self.roomBox.currentTextChanged.connect(self.roomBoxChanged)
-        l.addWidget(self.roomBox, 1, (100-2),1,2)
-
+        self.roomBox.setFixedWidth(230)
+        sublayout.addWidget(self.roomBoxlabel)
+        sublayout.addWidget(self.roomBox)
+        
         #Media Box
+        self.mediaBoxlabel = QLabel("Select Media:")
         self.mediaBox = QComboBox(self)
+        self.mediaBox.setEnabled(False)
         self.mediaBox.currentTextChanged.connect(self.outlierToggle)
-        l.addWidget(self.mediaBox, 2, (100-2),1,2)
+        self.mediaBox.setFixedWidth(230)
+        sublayout2.addWidget(self.mediaBoxlabel)
+        sublayout2.addWidget(self.mediaBox)
 
         #Outliers Radiobutton
         self.outlierBtn = QRadioButton("Detect Outliers", self)
         self.outlierBtn.setChecked(True)
         self.outlierBtn.toggled.connect(self.outlierToggle)
-        l.addWidget(self.outlierBtn, 3, (100-2),1,2)
+        sublayout.addWidget(self.outlierBtn)
+
+        #Line edit
+        self.smthing = QLineEdit(self)
+        self.smthing.setFixedWidth(230)
+        sublayout.addWidget(self.smthing)
+
+        #Intervals spinbox
+        self.spinbox = QSpinBox(self)
+        self.spinbox.setFixedWidth(230)
+        sublayout.addWidget(self.spinbox)
+
+        subverticallayout.addLayout(sublayout)
+        subverticallayout.addLayout(sublayout2)
+
+        sizeable = QWidget()
+        sizeable.setLayout(subverticallayout)
+        sizeable.setFixedWidth(700)
+        l.addWidget(sizeable, 103, 1, 1, 2)
 
         self.compute_initial_figure()
 
@@ -170,24 +238,13 @@ class App(QWidget):
 
     #Plotting the data selected
     def plot(self):
-        plt.style.use('fivethirtyeight')
-        plt.rcParams['font.family'] = 'serif'
-        plt.rcParams['font.serif'] = 'Ubuntu'
-        plt.rcParams['font.monospace'] = 'Ubuntu Mono'
-        plt.rcParams['font.size'] = 10
-        plt.rcParams['axes.labelsize'] = 10
-        plt.rcParams['axes.labelweight'] = 'bold'
-        plt.rcParams['xtick.labelsize'] = 8
-        plt.rcParams['ytick.labelsize'] = 8
-        plt.rcParams['legend.fontsize'] = 10
-        plt.rcParams['figure.titlesize'] = 12
         test = GetFromJson.getMediaIndex(self.mediaBox.currentText(), self.roomBox.currentText())
         df = GetFromJson.getDataframe(test)
-        df = GetFromJson.getDataframeFreq(df, "1H")
+        df = GetFromJson.getDataframeFreq(df, "1M")
         df = GetFromJson.removeOutliers(df)
         axes=self.figure.add_subplot(111)
         axes.cla()
-        axes.plot(df.index.values, df['readings'], 'r-', linewidth=1, linestyle='-', label='Testing', color='blue')
+        axes.plot(df.index.values, df['readings'], 'r-', linewidth=1, linestyle='-', label='Testing', color='#E9B955')
         self.canvas.draw()
 
 
