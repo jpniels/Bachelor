@@ -77,20 +77,17 @@ def setReadingIntervals(df, intervals):
     bins.append(df.min())
 
     incrementValue = (df.max()-df.min())/intervals
-    bins = np.arange(df.min()-1,df.max()+incrementValue/intervals,incrementValue)
+    bins = np.arange(df.min()-1,df.max()+1+incrementValue/intervals,incrementValue)
 
     for i in range(0, len(bins)-1):
-        label = "{0:.0f}".format(bins[i]) +'-'+"{0:.0f}".format(bins[i+1])
+        label = "{0:.1f}".format(bins[i]) +'-'+"{0:.1f}".format(bins[i+1])
         labels.append(label)
-    df = pd.cut(df, bins=bins, labels=labels)
-
+    df['readings'] = pd.cut(df['readings'], bins=bins, labels=labels)
     return df
 
 #Return a dataframe with boolean assocation rules
-def getBooleanAssociationRules(co2, temp):
-    co2 = co2.to_frame()
-    temp = temp.to_frame()
-    df = co2.merge(temp, left_index=True, right_index=True, how='inner')
+def getBooleanAssociationRules(df, df2):
+    df = df.merge(df2, left_index=True, right_index=True, how='inner')
     df = pd.get_dummies(df)
     return df
 
@@ -113,10 +110,10 @@ def removeOutliers(df):
 # df2 = getDataframe(test2)
 # df = getDataframeFreq(df, "2H")
 # df2 = getDataframeFreq(df2, "2H")
-# #df = removeOutliers(df)
-# df = setReadingIntervals(df, 10)
+# df = removeOutliers(df)
+# df = setReadingIntervals(df, 2)
 # df2 = setReadingIntervals(df2, 15)
 # df = getBooleanAssociationRules(df, df2)
 # df = ap.apriori(df, 0.1)
-# #print(ap.allConfidence(df,0.1))
+# #print(ap.allCon1fidence(df,0.1))
 # #print(ap.allLift(df, 0.1))
