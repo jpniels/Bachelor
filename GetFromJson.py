@@ -99,21 +99,28 @@ def createInterpolation(df, interval):
     dfWithIntervals = dfWithIntervals.interpolate(method="time")
     return dfWithIntervals
 
-#Detect outliers using IQR
+#Remove outliers
 def removeOutliers(df):
     df = df[df.apply(lambda x: np.abs(x - x.mean()) / x.std() < 3).all(axis=1)]
     return df
 
-# test = getMediaIndex('temperature', 'e22-601b-0')
-# test2 = getMediaIndex('co2', 'e22-601b-0')
-# df = getDataframe(test)
-# df2 = getDataframe(test2)
-# df = getDataframeFreq(df, "2H")
-# df2 = getDataframeFreq(df2, "2H")
-# df = removeOutliers(df)
-# df = setReadingIntervals(df, 2)
-# df2 = setReadingIntervals(df2, 15)
-# df = getBooleanAssociationRules(df, df2)
-# df = ap.apriori(df, 0.1)
-# #print(ap.allCon1fidence(df,0.1))
-# #print(ap.allLift(df, 0.1))
+def dataframeFromTime(df, fromtime, totime):
+    df = df[df.index > pd.to_datetime(fromtime, unit='ms')]
+    df = df[df.index < pd.to_datetime(totime, unit='ms')]
+    return df
+
+    
+
+test = getMediaIndex('temperature', 'e22-601b-0')
+test2 = getMediaIndex('co2', 'e22-601b-0')
+df = getDataframe(test)
+df2 = getDataframe(test2)
+df = getDataframeFreq(df, "2H")
+df2 = getDataframeFreq(df2, "2H")
+df = removeOutliers(df)
+df = setReadingIntervals(df, 2)
+df2 = setReadingIntervals(df2, 15)
+df = getBooleanAssociationRules(df, df2)
+df = ap.apriori(df, 0.1)
+#print(ap.allCon1fidence(df,0.1))
+#print(ap.allLift(df, 0.1))

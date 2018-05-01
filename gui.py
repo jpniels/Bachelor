@@ -23,7 +23,6 @@ class mainWindow(QMainWindow):
         self.app_widget = App()
         self.setCentralWidget(self.app_widget)
         
-
         #Global Menu
         mainMenu = self.menuBar()
         fileMenu = mainMenu.addMenu('File')
@@ -115,6 +114,11 @@ class App(QWidget):
             height: 30px;
             selection-color: #434C55;
             selection-background-color: #FFB36C;
+        }
+        .QTableWidget {
+            selection-color: #434C55;
+            selection-background-color: #FFB36C;
+            border-width: 0px;
         }
         .QRadioButton {
             color: darkgrey;
@@ -232,23 +236,43 @@ class App(QWidget):
         self.spinbox.setRange(1, 25)
         sublayout.addWidget(self.spinbox)
 
-        #Calendar Widget
+        #Calendar From Widget
+        self.dateTimelabel = QLabel("Select Start Date: ")
         self.calendar = QCalendarWidget(self)
         format = QTextCharFormat()
         format.setBackground(QColor('#434C55'))
         weekendformat = QTextCharFormat()
         weekendformat.setForeground(QColor('#fff'))
         self.calendar.setHeaderTextFormat(format)
+        self.calendar.setStyleSheet('selection-background-color: #FFB36C; selection-color: #434C55;')
         self.calendar.setWeekdayTextFormat(Qt.Saturday, weekendformat)
         self.calendar.setWeekdayTextFormat(Qt.Sunday, weekendformat)
+        sublayout2.addWidget(self.dateTimelabel)
         sublayout2.addWidget(self.calendar)
 
-        #Date time widget for converting to ms - nonvisible
-        self.datetime = QDateTimeEdit(self)
+        #Date time From widget for converting to ms - nonvisible
+        self.datetime = QDateTimeEdit()
         self.datetime.setCalendarPopup(True)
         self.datetime.setCalendarWidget(self.calendar)
-        self.datetime.dateTimeChanged.connect(self.showDate)
+        self.datetime.dateTimeChanged.connect(self.plot)
         self.datetime.setVisible(False)
+
+        #Calendar To Widget
+        self.dateTimelabelto = QLabel("Select End Date: ")
+        self.calendarto = QCalendarWidget(self)
+        self.calendarto.setHeaderTextFormat(format)
+        self.calendarto.setStyleSheet('selection-background-color: #FFB36C; selection-color: #434C55;')
+        self.calendarto.setWeekdayTextFormat(Qt.Saturday, weekendformat)
+        self.calendarto.setWeekdayTextFormat(Qt.Sunday, weekendformat)
+        sublayout2.addWidget(self.dateTimelabelto)
+        sublayout2.addWidget(self.calendarto)
+
+        #Date time From widget for converting to ms - nonvisible
+        self.datetimeto = QDateTimeEdit(QDate.currentDate())
+        self.datetimeto.setCalendarPopup(True)
+        self.datetimeto.setCalendarWidget(self.calendarto)
+        self.datetimeto.dateTimeChanged.connect(self.plot)
+        self.datetimeto.setVisible(False)
 
         ####################################################################################################################
         ### Grid 2
@@ -299,18 +323,28 @@ class App(QWidget):
         sublayout3.addWidget(self.spinbox2)
 
         ##########################################################################################################################
+
+        #Table Widget
+        self.tableWidget = QTableWidget()
+        self.tableWidget.setRowCount(1)
+        self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.tableWidget.setColumnCount(2)
+        self.tableWidget.setItem(0,0, QTableWidgetItem("Cell (1,1)"))
+        sublayout3.addWidget(self.tableWidget)
+
         
         #Add layouts to grid
         subverticallayout.addLayout(sublayout)
         subverticallayout.addLayout(sublayout2)
         subverticallayout.addLayout(sublayout3)
         subverticallayout.addLayout(sublayout4)
-        subverticallayout.setAlignment(Qt.AlignLeft)
+        #subverticallayout.setAlignment(Qt.AlignLeft)
 
         sizeable = QWidget()
         sizeable.setLayout(subverticallayout)
         sizeable.setFixedWidth(1030)
         l.addWidget(sizeable, 103, 1, 1, 2)
+        l.setAlignment(Qt.AlignCenter)
 
         self.compute_initial_figure()
 
@@ -323,9 +357,6 @@ class App(QWidget):
             if v not in medialist:
                 medialist.append(v)
         self.mediaBox.addItems(medialist)
-
-    def showDate(self, date):
-        print(date.toMSecsSinceEpoch())
 
     def roomBox2Changed(self):
         self.mediaBox2.setEnabled(True)
@@ -368,13 +399,16 @@ class App(QWidget):
             if self.intervalsBtn2.isChecked() == True:
                 df2 = GetFromJson.setReadingIntervals(df2, self.spinbox2.value())
                 df2['readings'] = df2['readings'].astype(str)
+
+            df = GetFromJson.dataframeFromTime(df, self.datetime.dateTime().toMSecsSinceEpoch(), self.datetimeto.dateTime().toMSecsSinceEpoch())
+            df2 = GetFromJson.dataframeFromTime(df2, self.datetime.dateTime().toMSecsSinceEpoch(), self.datetimeto.dateTime().toMSecsSinceEpoch())
             
             #Plot the graph
             axes=self.figure.add_subplot(111)
             axes.cla()
             axes.plot(df.index.values, df['readings'], 'r-', linewidth=1, linestyle='-', color='#E9B955')
             axes.plot(df2.index.values, df2['readings'], 'r-', linewidth=1, linestyle='-', color='#2D4CC5')
-            axes.set_title(self.mediaBox.currentText() + ' in ' + self.roomBox.currentText())
+            axes.set_title(self.mediaBox.currentText() + ' & ' + self.mediaBox2.currentText() + ' in rooms ' + self.roomBox.currentText() + ', ' + self.roomBox2.currentText())
             axes.set_xlabel('Time')
             axes.set_ylabel('Readings')
             self.canvas.draw()
