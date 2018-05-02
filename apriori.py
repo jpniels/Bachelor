@@ -39,7 +39,6 @@ def apriori(df, minSupport):
         else:
             maxValueset = 0
   
-    
     resultsDataFrame = concatSets(supportDict, valuesetDict)
     return resultsDataFrame 
 

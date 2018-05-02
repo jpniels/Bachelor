@@ -7,6 +7,7 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import numpy as np
 import GetFromJson
+import PandasModel
 
 #Main Window
 class mainWindow(QMainWindow):
@@ -20,9 +21,11 @@ class mainWindow(QMainWindow):
     def __init__(self):
         super().__init__(parent=None)
         self.mainStyle()
+        self.setGeometry(20, 20, 800, 600)
         self.app_widget = App()
         self.setCentralWidget(self.app_widget)
-        
+        self.setWindowTitle('PyQAR Project')
+
         #Global Menu
         mainMenu = self.menuBar()
         fileMenu = mainMenu.addMenu('File')
@@ -115,16 +118,23 @@ class App(QWidget):
             selection-color: #434C55;
             selection-background-color: #FFB36C;
         }
-        .QTableWidget {
+        .QTableView {
             selection-color: #434C55;
             selection-background-color: #FFB36C;
-            border-width: 0px;
+            border: none;
         }
         .QRadioButton {
             color: darkgrey;
         }
-        .QHBoxLayout {
-            background-color: white;
+        .QRadioButton::indicator::unchecked{
+            border: 1px solid #5C656E; 
+            background-color: #434C55;
+            height: 13px;
+        }
+        .QRadioButton::indicator::checked{
+            border: 1px solid #434C55; 
+            background-color: #FFB36C; 
+            height: 13px;
         }
         .QLabel {
             color: darkgrey;
@@ -134,13 +144,6 @@ class App(QWidget):
     #Global initialization
     def __init__(self):
         super().__init__()
-        self.title = 'Bachelor Project'
-        self.left = 10
-        self.top = 10
-        self.width = 800
-        self.height = 600
-        self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
         self.initUI()
         self.appStyle()
 
@@ -167,26 +170,42 @@ class App(QWidget):
         plt.rcParams['axes.grid'] = True
         plt.rcParams['grid.color'] = '#343B43'
         plt.rcParams['text.color'] = 'darkgrey'
-        
+        plt.xticks(rotation=90)
 
         #Grid/layout handling
-        self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
         l = QGridLayout(self)
-        self.figure = plt.figure(figsize=(5,7))   
-        self.canvas = FigureCanvas(self.figure)
-        l.addWidget(self.canvas, 0,0,1,0)
-        subverticallayout = QHBoxLayout()
-        subverticallayout.setSpacing(4)
-        subverticallayout.setAlignment(Qt.AlignCenter)
+        subhorizontallayout = QHBoxLayout()
         sublayout = QVBoxLayout()
         sublayout2 = QVBoxLayout()
         sublayout3 = QVBoxLayout()
-        sublayout4 = QVBoxLayout()
         sublayout.setAlignment(Qt.AlignTop)
         sublayout2.setAlignment(Qt.AlignTop)
         sublayout3.setAlignment(Qt.AlignTop)
-        sublayout4.setAlignment(Qt.AlignTop)
+        self.figure = plt.figure(figsize=(5,7))   
+        self.canvas = FigureCanvas(self.figure)
+        self.canvas.setMinimumWidth(800)
+        self.canvas.setMaximumHeight(800)
+        sublayout2.addWidget(self.canvas)
+
+        #Support Button
+        self.supportbutton = QRadioButton("Calculate Support", self)
+        self.supportbutton.toggled.connect(self.plot)
+        sublayout2.addWidget(self.supportbutton)
+
+        #Conviction Button
+        self.confidencebutton = QRadioButton("Calculate Confidence", self)
+        self.confidencebutton.toggled.connect(self.plot)
+        sublayout2.addWidget(self.confidencebutton)
+
+        #Lift Button
+        self.liftbutton = QRadioButton("Calculate Lift", self)
+        self.liftbutton.toggled.connect(self.plot)
+        sublayout2.addWidget(self.liftbutton)
+
+        #Lift Button
+        self.allbutton = QRadioButton("Calculate All", self)
+        self.allbutton.toggled.connect(self.plot)
+        sublayout2.addWidget(self.allbutton)
 
         ####################################################################################################################
         ### Grid 1
@@ -208,8 +227,8 @@ class App(QWidget):
         self.mediaBox.setEnabled(False)
         self.mediaBox.currentTextChanged.connect(self.plot)
         self.mediaBox.setFixedWidth(250)
-        sublayout2.addWidget(self.mediaBoxlabel)
-        sublayout2.addWidget(self.mediaBox)
+        sublayout.addWidget(self.mediaBoxlabel)
+        sublayout.addWidget(self.mediaBox)
 
         #Outliers Radiobutton 1
         self.outlierBtn = QRadioButton("Remove Outliers", self)
@@ -247,8 +266,10 @@ class App(QWidget):
         self.calendar.setStyleSheet('selection-background-color: #FFB36C; selection-color: #434C55;')
         self.calendar.setWeekdayTextFormat(Qt.Saturday, weekendformat)
         self.calendar.setWeekdayTextFormat(Qt.Sunday, weekendformat)
-        sublayout2.addWidget(self.dateTimelabel)
-        sublayout2.addWidget(self.calendar)
+        self.calendar.setFixedWidth(250)
+        self.calendar.setMaximumHeight(220)
+        sublayout.addWidget(self.dateTimelabel)
+        sublayout.addWidget(self.calendar)
 
         #Date time From widget for converting to ms - nonvisible
         self.datetime = QDateTimeEdit()
@@ -257,22 +278,7 @@ class App(QWidget):
         self.datetime.dateTimeChanged.connect(self.plot)
         self.datetime.setVisible(False)
 
-        #Calendar To Widget
-        self.dateTimelabelto = QLabel("Select End Date: ")
-        self.calendarto = QCalendarWidget(self)
-        self.calendarto.setHeaderTextFormat(format)
-        self.calendarto.setStyleSheet('selection-background-color: #FFB36C; selection-color: #434C55;')
-        self.calendarto.setWeekdayTextFormat(Qt.Saturday, weekendformat)
-        self.calendarto.setWeekdayTextFormat(Qt.Sunday, weekendformat)
-        sublayout2.addWidget(self.dateTimelabelto)
-        sublayout2.addWidget(self.calendarto)
-
-        #Date time From widget for converting to ms - nonvisible
-        self.datetimeto = QDateTimeEdit(QDate.currentDate())
-        self.datetimeto.setCalendarPopup(True)
-        self.datetimeto.setCalendarWidget(self.calendarto)
-        self.datetimeto.dateTimeChanged.connect(self.plot)
-        self.datetimeto.setVisible(False)
+        sublayout.addStretch()
 
         ####################################################################################################################
         ### Grid 2
@@ -294,8 +300,8 @@ class App(QWidget):
         self.mediaBox2.setEnabled(False)
         self.mediaBox2.currentTextChanged.connect(self.plot)
         self.mediaBox2.setFixedWidth(250)
-        sublayout4.addWidget(self.mediaBoxlabel2)
-        sublayout4.addWidget(self.mediaBox2)
+        sublayout3.addWidget(self.mediaBoxlabel2)
+        sublayout3.addWidget(self.mediaBox2)
 
         #Outliers Radiobutton 2
         self.outlierBtn2 = QRadioButton("Remove Outliers", self)
@@ -322,28 +328,40 @@ class App(QWidget):
         self.spinbox2.setRange(1, 25)
         sublayout3.addWidget(self.spinbox2)
 
+        #Calendar To Widget
+        self.dateTimelabelto = QLabel("Select End Date: ")
+        self.calendarto = QCalendarWidget(self)
+        self.calendarto.setHeaderTextFormat(format)
+        self.calendarto.setStyleSheet('selection-background-color: #FFB36C; selection-color: #434C55;')
+        self.calendarto.setWeekdayTextFormat(Qt.Saturday, weekendformat)
+        self.calendarto.setWeekdayTextFormat(Qt.Sunday, weekendformat)
+        self.calendarto.setFixedWidth(250)
+        self.calendarto.setMaximumHeight(220)
+        sublayout3.addWidget(self.dateTimelabelto)
+        sublayout3.addWidget(self.calendarto)
+
+        #Date time From widget for converting to ms - nonvisible
+        self.datetimeto = QDateTimeEdit(QDate.currentDate())
+        self.datetimeto.setCalendarPopup(True)
+        self.datetimeto.setCalendarWidget(self.calendarto)
+        self.datetimeto.dateTimeChanged.connect(self.plot)
+        self.datetimeto.setVisible(False)
+
+        sublayout3.addStretch()
         ##########################################################################################################################
 
         #Table Widget
-        self.tableWidget = QTableWidget()
-        self.tableWidget.setRowCount(1)
-        self.tableWidget.setEditTriggers(QTableWidget.NoEditTriggers)
-        self.tableWidget.setColumnCount(2)
-        self.tableWidget.setItem(0,0, QTableWidgetItem("Cell (1,1)"))
-        sublayout3.addWidget(self.tableWidget)
+        self.tableWidget = QTableView()
+        sublayout2.addWidget(self.tableWidget)
 
-        
         #Add layouts to grid
-        subverticallayout.addLayout(sublayout)
-        subverticallayout.addLayout(sublayout2)
-        subverticallayout.addLayout(sublayout3)
-        subverticallayout.addLayout(sublayout4)
-        #subverticallayout.setAlignment(Qt.AlignLeft)
+        subhorizontallayout.addLayout(sublayout)
+        subhorizontallayout.addLayout(sublayout2)
+        subhorizontallayout.addLayout(sublayout3)
 
         sizeable = QWidget()
-        sizeable.setLayout(subverticallayout)
-        sizeable.setFixedWidth(1030)
-        l.addWidget(sizeable, 103, 1, 1, 2)
+        sizeable.setLayout(subhorizontallayout)
+        l.addWidget(sizeable, 1, 1, 1, 1)
         l.setAlignment(Qt.AlignCenter)
 
         self.compute_initial_figure()
@@ -358,6 +376,7 @@ class App(QWidget):
                 medialist.append(v)
         self.mediaBox.addItems(medialist)
 
+    #Same as above for room2 selected
     def roomBox2Changed(self):
         self.mediaBox2.setEnabled(True)
         self.mediaBox2.clear()
@@ -366,13 +385,6 @@ class App(QWidget):
             if v not in medialist2:
                 medialist2.append(v)
         self.mediaBox2.addItems(medialist2)
-
-    #Handle Outlier toggle
-    def outlierToggle(self):
-        if self.outlierBtn.isChecked() == True:
-            print('nice choice')
-        else:
-            print('hej')
     
     #Dont mess with this shit, just the initial empty plot.. useless
     def compute_initial_figure(self):
@@ -382,7 +394,7 @@ class App(QWidget):
 
     #Plotting the data selected
     def plot(self):
-        try:
+        #try:
             test = GetFromJson.getMediaIndex(self.mediaBox.currentText(), self.roomBox.currentText())
             df = GetFromJson.getDataframe(test)
             df = GetFromJson.getDataframeFreq(df, "1H")
@@ -402,7 +414,26 @@ class App(QWidget):
 
             df = GetFromJson.dataframeFromTime(df, self.datetime.dateTime().toMSecsSinceEpoch(), self.datetimeto.dateTime().toMSecsSinceEpoch())
             df2 = GetFromJson.dataframeFromTime(df2, self.datetime.dateTime().toMSecsSinceEpoch(), self.datetimeto.dateTime().toMSecsSinceEpoch())
-            
+
+            #Fill table testing!
+            if self.liftbutton.isChecked() == True:
+                df3 = GetFromJson.getBooleanAssociationRules(df, df2)
+                df3 = GetFromJson.ap.apriori(df3, 0.1)
+                df3 = GetFromJson.ap.allLift(df3,0.1)
+                model = PandasModel.PandasModel(df3)
+                self.tableWidget.setModel(model)
+            if self.supportbutton.isChecked() == True:
+                df3 = GetFromJson.getBooleanAssociationRules(df, df2)
+                df3 = GetFromJson.ap.apriori(df3, 0.1)
+                model = PandasModel.PandasModel(df3)
+                self.tableWidget.setModel(model)
+            if self.confidencebutton.isChecked() == True:
+                df3 = GetFromJson.getBooleanAssociationRules(df, df2)
+                df3 = GetFromJson.ap.apriori(df3, 0.1)
+                df3 = GetFromJson.ap.allConfidence(df3, 0.1)
+                model = PandasModel.PandasModel(df3)
+                self.tableWidget.setModel(model)
+
             #Plot the graph
             axes=self.figure.add_subplot(111)
             axes.cla()
@@ -412,7 +443,7 @@ class App(QWidget):
             axes.set_xlabel('Time')
             axes.set_ylabel('Readings')
             self.canvas.draw()
-        except:
+        #except:
             print('didnt work bro')
 
 class LoginWindow(QMainWindow):
@@ -432,9 +463,8 @@ class LoginWindow(QMainWindow):
     #Login Window
     def __init__(self):
         super().__init__()
-        self.title = 'Bachelor Project'
+        self.setWindowTitle('PyQAR Login')
         self.mainWindow = mainWindow()
-        #Layout Styling
         centralWidget = QWidget()   
         self.setFixedSize(320,200)       
         self.setCentralWidget(centralWidget)   
