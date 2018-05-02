@@ -56,8 +56,15 @@ class mainWindow(QMainWindow):
         editMenu.addAction(redoButton)
 
         #View Menu
-        somethingButton = QAction('View Something', self)
-        viewMenu.addAction(somethingButton)
+        viewQAR = QAction('View Association Rules', self, checkable=True)
+        viewQAR.setChecked(True)
+        viewQAR.triggered.connect(self.toggleQAR)
+        viewMenu.addAction(viewQAR)
+
+        viewPlot = QAction('View Plot', self, checkable=True)
+        viewPlot.setChecked(True)
+        viewPlot.triggered.connect(self.togglePlot)
+        viewMenu.addAction(viewPlot)
 
         #Tools Menu
         globalSettingsButton = QAction('Global Settings', self)
@@ -101,6 +108,26 @@ class mainWindow(QMainWindow):
             event.accept()
         else:
             event.ignore()
+    
+    def toggleQAR(self, state):
+        if state:
+            self.app_widget.supportbutton.show()
+            self.app_widget.allbutton.show()
+            self.app_widget.liftbutton.show()
+            self.app_widget.confidencebutton.show()
+            self.app_widget.tableWidget.show()
+        else:
+            self.app_widget.supportbutton.hide()
+            self.app_widget.allbutton.hide()
+            self.app_widget.liftbutton.hide()
+            self.app_widget.confidencebutton.hide()
+            self.app_widget.tableWidget.hide()
+
+    def togglePlot(self, state):
+        if state:
+            self.app_widget.canvas.show()
+        else:
+            self.app_widget.canvas.hide()
 
 #Central widget within mainWindow
 class App(QWidget):
@@ -394,7 +421,7 @@ class App(QWidget):
 
     #Plotting the data selected
     def plot(self):
-        #try:
+        try:
             test = GetFromJson.getMediaIndex(self.mediaBox.currentText(), self.roomBox.currentText())
             df = GetFromJson.getDataframe(test)
             df = GetFromJson.getDataframeFreq(df, "1H")
@@ -443,7 +470,7 @@ class App(QWidget):
             axes.set_xlabel('Time')
             axes.set_ylabel('Readings')
             self.canvas.draw()
-        #except:
+        except:
             print('didnt work bro')
 
 class LoginWindow(QMainWindow):
