@@ -151,7 +151,7 @@ class App(QWidget):
             border: none;
         }
         .QRadioButton {
-            color: darkgrey;
+            color: #fff;
         }
         .QRadioButton::indicator::unchecked{
             border: 1px solid #5C656E; 
@@ -263,24 +263,41 @@ class App(QWidget):
         self.outlierBtn.toggled.connect(self.plot)
         sublayout.addWidget(self.outlierBtn)
 
-        #Line edit 1
-        self.smthing = QLineEdit(self)
-        self.smthing.setFixedWidth(250)
-        sublayout.addWidget(self.smthing)
-
         #Intervals Radiobutton 1
         self.intervalsBtn = QRadioButton("Use intervals", self)
         self.intervalsBtn.setAutoExclusive(False)
-        self.intervalsBtn.toggled.connect(self.plot)
+        self.intervalsBtn.toggled.connect(self.intervalstoggled)
         sublayout.addWidget(self.intervalsBtn)
 
         #Intervals spinbox 1
         self.spinbox = QSpinBox(self)
         self.spinbox.valueChanged.connect(self.plot)
+        self.spinbox.hide()
         self.spinbox.setFixedWidth(250)
         self.spinbox.setSuffix(' Intervals')
         self.spinbox.setRange(1, 25)
         sublayout.addWidget(self.spinbox)
+
+        #Time Frequency Radiobutton
+        self.freqButton = QRadioButton("Set Time Frequency", self)
+        self.freqButton.setAutoExclusive(False)
+        self.freqButton.toggled.connect(self.frequencytoggled)
+        sublayout.addWidget(self.freqButton)
+
+        #Time Frequency Box
+        self.timefreqBox = QComboBox(self)
+        self.timefreqBox.hide()
+        self.timefreqBox.addItem('30Min')
+        self.timefreqBox.addItem('1H')
+        self.timefreqBox.addItem('2H')
+        self.timefreqBox.addItem('12H')
+        self.timefreqBox.addItem('1D')
+        self.timefreqBox.addItem('1W')
+        self.timefreqBox.addItem('2W')
+        self.timefreqBox.addItem('1M')
+        self.timefreqBox.currentTextChanged.connect(self.plot)
+        self.timefreqBox.setFixedWidth(250)
+        sublayout.addWidget(self.timefreqBox)
 
         #Calendar From Widget
         self.dateTimelabel = QLabel("Select Start Date: ")
@@ -336,11 +353,6 @@ class App(QWidget):
         self.outlierBtn2.toggled.connect(self.plot)
         sublayout3.addWidget(self.outlierBtn2)
 
-        #Line edit 2
-        self.smthing2 = QLineEdit(self)
-        self.smthing2.setFixedWidth(250)
-        sublayout3.addWidget(self.smthing2)
-
         #Intervals Radiobutton 2
         self.intervalsBtn2 = QRadioButton("Use intervals", self)
         self.intervalsBtn2.setAutoExclusive(False)
@@ -350,10 +362,32 @@ class App(QWidget):
         #Intervals spinbox 2
         self.spinbox2 = QSpinBox(self)
         self.spinbox2.valueChanged.connect(self.plot)
+        self.spinbox2.hide()
         self.spinbox2.setFixedWidth(250)
         self.spinbox2.setSuffix(' Intervals')
         self.spinbox2.setRange(1, 25)
         sublayout3.addWidget(self.spinbox2)
+
+        #Time Frequency Radiobutton
+        self.freqButton2 = QRadioButton("Set Time Frequency", self)
+        self.freqButton2.setAutoExclusive(False)
+        self.freqButton2.toggled.connect(self.frequencytoggled2)
+        sublayout3.addWidget(self.freqButton2)
+
+        #Time Frequency Box 2
+        self.timefreqBox2 = QComboBox(self)
+        self.timefreqBox2.hide()
+        self.timefreqBox2.addItem('30Min')
+        self.timefreqBox2.addItem('1H')
+        self.timefreqBox2.addItem('2H')
+        self.timefreqBox2.addItem('12H')
+        self.timefreqBox2.addItem('1D')
+        self.timefreqBox2.addItem('1W')
+        self.timefreqBox2.addItem('2W')
+        self.timefreqBox2.addItem('1M')
+        self.timefreqBox2.currentTextChanged.connect(self.plot)
+        self.timefreqBox2.setFixedWidth(250)
+        sublayout3.addWidget(self.timefreqBox2)
 
         #Calendar To Widget
         self.dateTimelabelto = QLabel("Select End Date: ")
@@ -412,6 +446,31 @@ class App(QWidget):
             if v not in medialist2:
                 medialist2.append(v)
         self.mediaBox2.addItems(medialist2)
+
+    def intervalstoggled(self, state):
+        if state:
+            self.spinbox.show()
+        else:
+            self.spinbox.hide()
+
+    def frequencytoggled(self, state):
+        if state:
+            self.timefreqBox.show()
+        else:
+            self.timefreqBox.hide()
+
+    def intervalstoggled2(self, state):
+        if state:
+            self.spinbox2.show()
+        else:
+            self.spinbox2.hide()
+
+    def frequencytoggled2(self, state):
+        if state:
+            self.timefreqBox2.show()
+        else:
+            self.timefreqBox2.hide()
+
     
     #Dont mess with this shit, just the initial empty plot.. useless
     def compute_initial_figure(self):

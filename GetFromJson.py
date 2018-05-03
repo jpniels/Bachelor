@@ -93,7 +93,7 @@ def getBooleanAssociationRules(df, df2):
 
 #Set interpolation
 def createInterpolation(df, interval):
-    timerange = pd.date_range(df.index[0], df.index[-1], freq=interval, normalize=True)
+    timerange = pd.date_range(df.index[0], df.index[-1], freq=interval)
     dfWithIntervals = timerange.union(df.index)
     dfWithIntervals = df.reindex(dfWithIntervals)
     dfWithIntervals = dfWithIntervals.interpolate(method="time")
@@ -109,18 +109,34 @@ def dataframeFromTime(df, fromtime, totime):
     df = df[df.index < pd.to_datetime(totime, unit='ms')]
     return df
 
-    
-
+#Pick the rooms and get indexes of it
 test = getMediaIndex('temperature', 'e22-601b-0')
 test2 = getMediaIndex('co2', 'e22-601b-0')
+
+#Create dataframes of the rooms
 df = getDataframe(test)
 df2 = getDataframe(test2)
+
+#Resample the dataframe into time intervals (specified i.e 2 hour) using the mean value
 df = getDataframeFreq(df, "2H")
 df2 = getDataframeFreq(df2, "2H")
+
+#Create interpolating data every specified interval. Uses time interpolation
+df = createInterpolation(df, '30Min')
+df2 = createInterpolation(df2, '30Min')
+
+#Remove outliers from the dataframes
 df = removeOutliers(df)
+df2 = removeOutliers(df2)
+
+#Set the readings into specified intervals. Using min/max and wanted # of intervals
 df = setReadingIntervals(df, 2)
 df2 = setReadingIntervals(df2, 15)
+
+#Get Boolean Association rules. Apriori
 df = getBooleanAssociationRules(df, df2)
 df = ap.apriori(df, 0.1)
-#print(ap.allCon1fidence(df,0.1))
+
+#Using the apriori dataframe, confidence, lift etc can be calculated
+#print(ap.allConfidence(df,0.1))
 #print(ap.allLift(df, 0.1))

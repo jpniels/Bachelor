@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 
+#Look for new combinations
 def newCombinations(oldCombos):
     previousStep = np.unique(oldCombos.flatten())
     for oldCombi in oldCombos:
@@ -42,6 +43,7 @@ def apriori(df, minSupport):
     resultsDataFrame = concatSets(supportDict, valuesetDict)
     return resultsDataFrame 
 
+#Concat the support and valueset into dataframe
 def concatSets(supportSet,valueSet):
     allResults = []
     for k in sorted(valueSet):
@@ -78,6 +80,7 @@ def allConfidence(df, min_confidence):
     confDf = pd.DataFrame(list(zip(ante, conse, conf)),columns=['antecedants','consequents', 'confidence']) #create dataframe with values
     return confDf
 
+#Calculate the lift for all values
 def allLift(df, min_lift):
     df2 = df.loc[df['itemsets'].str.len() > 1]
     df3 = df.loc[df['itemsets'].str.len() <= 1]
@@ -101,10 +104,18 @@ def allLift(df, min_lift):
     liftDf = pd.DataFrame(list(zip(ante, conse, lift)),columns=['antecedants','consequents', 'lift'])
     return liftDf
 
-# def confidence(ante, conse):
-#     create dataframe from the 2 values
-#     allConfidence(newDf)
-#     support(X and Y)/support(X)
-
-# def lift(ante, conse):
-#     support(X and Y)/(support(X)*support(Y))
+#Calculate the conviction for all calues
+def allConviction(supp, conf):
+    conviction = []
+    tempConf = conf
+    for i in range(0,len(supp)):
+        for j in range(0, len(supp['itemsets'][i])):
+            for ii in range(0, len(conf)):
+                for jj in range(0, len(conf['consequents'][ii])):
+                    if supp['itemsets'][i][j] != conf['antecedants'][ii][0] and len(supp['itemsets'][i]) <=1:
+                        if supp['itemsets'][i][j] == conf['consequents'][ii][jj]:
+                            conviction.append((1-supp['support'][i])/(1-conf['confidence'][ii]))
+                            conf.drop([ii])
+                            supp.drop([i])
+    tempConf['conviction'] = conviction                      
+    return tempConf
