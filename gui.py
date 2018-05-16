@@ -138,7 +138,7 @@ class App(QWidget):
             background-color: #2A3036;
         }
 
-        .QComboBox, .QLineEdit, .QSpinBox{
+        .QComboBox, .QLineEdit, .QSpinBox, .QDoubleSpinBox{
             background-color: #434C55;
             color: #fff;
             height: 30px;
@@ -177,8 +177,6 @@ class App(QWidget):
     def initUI(self):
         #Plot Styling
         plt.style.use('seaborn-pastel')
-        plt.rcParams['font.family'] = 'serif'
-        plt.rcParams['font.serif'] = 'Ubuntu'
         plt.rcParams['font.monospace'] = 'Ubuntu Mono'
         plt.rcParams['font.size'] = 10
         plt.rcParams['xtick.color'] = '#96A391'
@@ -214,24 +212,32 @@ class App(QWidget):
         self.canvas.setMaximumHeight(800)
         sublayout2.addWidget(self.canvas)
 
+        self.threshold = QDoubleSpinBox(self)
+        self.threshold.valueChanged.connect(self.plot)
+        self.threshold.setFixedWidth(250)
+        self.threshold.setSuffix(' Threshold')
+        self.threshold.setRange(0, 5)
+        self.threshold.setSingleStep(0.1)
+        sublayout2.addWidget(self.threshold)
+
         #Support Button
         self.supportbutton = QRadioButton("Calculate Support", self)
-        self.supportbutton.toggled.connect(self.plot)
+        self.supportbutton.toggled.connect(self.aprioritoggled)
         sublayout2.addWidget(self.supportbutton)
 
         #Conviction Button
         self.confidencebutton = QRadioButton("Calculate Confidence", self)
-        self.confidencebutton.toggled.connect(self.plot)
+        self.confidencebutton.toggled.connect(self.aprioritoggled)
         sublayout2.addWidget(self.confidencebutton)
 
         #Lift Button
         self.liftbutton = QRadioButton("Calculate Lift", self)
-        self.liftbutton.toggled.connect(self.plot)
+        self.liftbutton.toggled.connect(self.aprioritoggled)
         sublayout2.addWidget(self.liftbutton)
 
         #Lift Button
         self.allbutton = QRadioButton("Calculate All", self)
-        self.allbutton.toggled.connect(self.plot)
+        self.allbutton.toggled.connect(self.aprioritoggled)
         sublayout2.addWidget(self.allbutton)
 
         ####################################################################################################################
@@ -241,6 +247,8 @@ class App(QWidget):
         #Room Box 1
         self.roomBoxlabel = QLabel("Select Room:")
         self.roomBox = QComboBox(self)
+        self.roomBox.addItem('Room')
+        self.roomBox.model().item(0).setEnabled(False)
         for element in GetFromJson.getRooms():
             self.roomBox.addItem(element)
         self.roomBox.currentTextChanged.connect(self.roomBoxChanged)
@@ -252,6 +260,8 @@ class App(QWidget):
         self.mediaBoxlabel = QLabel("Select Media:")
         self.mediaBox = QComboBox(self)
         self.mediaBox.setEnabled(False)
+        self.mediaBox.addItem('Media')
+        self.mediaBox.model().item(0).setEnabled(False)
         self.mediaBox.currentTextChanged.connect(self.plot)
         self.mediaBox.setFixedWidth(250)
         sublayout.addWidget(self.mediaBoxlabel)
@@ -331,6 +341,8 @@ class App(QWidget):
         #Room Box 2
         self.roomBoxlabel2 = QLabel("Select Second Room:")
         self.roomBox2 = QComboBox(self)
+        self.roomBox2.addItem('Room')
+        self.roomBox2.model().item(0).setEnabled(False)
         for element in GetFromJson.getRooms():
             self.roomBox2.addItem(element)
         self.roomBox2.currentTextChanged.connect(self.roomBox2Changed)
@@ -342,6 +354,8 @@ class App(QWidget):
         self.mediaBoxlabel2 = QLabel("Select Second Media:")
         self.mediaBox2 = QComboBox(self)
         self.mediaBox2.setEnabled(False)
+        self.mediaBox2.addItem('Media')
+        self.mediaBox2.model().item(0).setEnabled(False)
         self.mediaBox2.currentTextChanged.connect(self.plot)
         self.mediaBox2.setFixedWidth(250)
         sublayout3.addWidget(self.mediaBoxlabel2)
@@ -356,7 +370,7 @@ class App(QWidget):
         #Intervals Radiobutton 2
         self.intervalsBtn2 = QRadioButton("Use intervals", self)
         self.intervalsBtn2.setAutoExclusive(False)
-        self.intervalsBtn2.toggled.connect(self.plot)
+        self.intervalsBtn2.toggled.connect(self.intervalstoggled2)
         sublayout3.addWidget(self.intervalsBtn2)
 
         #Intervals spinbox 2
@@ -449,27 +463,60 @@ class App(QWidget):
 
     def intervalstoggled(self, state):
         if state:
-            self.spinbox.show()
+            if self.mediaBox.currentText() != 'Media': 
+                self.spinbox.show()
+                self.plot()
+            else:
+                self.intervalsBtn.setChecked(False)
+                QMessageBox.warning(self, "Error", "You must pick a room and media before using this function.")
         else:
             self.spinbox.hide()
+            self.plot()
 
     def frequencytoggled(self, state):
         if state:
-            self.timefreqBox.show()
+            if self.mediaBox.currentText() != 'Media': 
+                self.timefreqBox.show()
+                self.plot()
+            else:
+                self.freqButton.setChecked(False)
+                QMessageBox.warning(self, "Error", "You must pick a room and media before using this function.")
         else:
             self.timefreqBox.hide()
+            self.plot()
 
     def intervalstoggled2(self, state):
         if state:
-            self.spinbox2.show()
+            if self.mediaBox2.currentText() != 'Media': 
+                self.spinbox2.show()
+                self.plot()
+            else:
+                self.intervalsBtn2.setChecked(False)
+                QMessageBox.warning(self, "Error", "You must pick a room and media before using this function.")
         else:
             self.spinbox2.hide()
+            self.plot()
 
     def frequencytoggled2(self, state):
         if state:
-            self.timefreqBox2.show()
+            if self.mediaBox2.currentText() != 'Media': 
+                self.timefreqBox2.show()
+                self.plot()
+            else:
+                self.freqButton2.setChecked(False)
+                QMessageBox.warning(self, "Error", "You must pick a room and media before using this function.")
         else:
             self.timefreqBox2.hide()
+            self.plot()
+
+    def aprioritoggled(self, state):
+        if state:
+            if self.mediaBox.currentText() != 'Media' or self.mediaBox2.currentText() != 'Media':
+                self.plot()
+            else:
+                QMessageBox.warning(self, "Error", "You must pick two rooms and medias before using this function.")
+        else:
+            self.plot()
 
     
     #Dont mess with this shit, just the initial empty plot.. useless
@@ -480,57 +527,73 @@ class App(QWidget):
 
     #Plotting the data selected
     def plot(self):
+        axes=self.figure.add_subplot(111)
+        axes.cla()
         try:
             test = GetFromJson.getMediaIndex(self.mediaBox.currentText(), self.roomBox.currentText())
             df = GetFromJson.getDataframe(test)
             df = GetFromJson.getDataframeFreq(df, "1H")
-            test2 = GetFromJson.getMediaIndex(self.mediaBox2.currentText(), self.roomBox2.currentText())
-            df2 = GetFromJson.getDataframe(test2)
-            df2 = GetFromJson.getDataframeFreq(df2, "1H")
+
             if self.outlierBtn.isChecked() == True:
                 df = GetFromJson.removeOutliers(df)
+            if self.freqButton.isChecked() == True:
+                df = GetFromJson.getDataframeFreq(df, self.timefreqBox.currentText())
             if self.intervalsBtn.isChecked() == True:
                 df = GetFromJson.setReadingIntervals(df, self.spinbox.value())
                 df['readings'] = df['readings'].astype(str)
+
+            
+            df = GetFromJson.dataframeFromTime(df, self.datetime.dateTime().toMSecsSinceEpoch(), self.datetimeto.dateTime().toMSecsSinceEpoch())
+            
+            axes.plot(df.index.values, df['readings'], 'r-', linewidth=1, linestyle='-', color='#E9B955')
+            self.canvas.draw()
+        
+        except:
+            print('didnt work 1 bro')
+
+        try:
+            test2 = GetFromJson.getMediaIndex(self.mediaBox2.currentText(), self.roomBox2.currentText())
+            df2 = GetFromJson.getDataframe(test2)
+            df2 = GetFromJson.getDataframeFreq(df2, "1H")
+            
             if self.outlierBtn2.isChecked() == True:
                 df2 = GetFromJson.removeOutliers(df2)
+            if self.freqButton2.isChecked() == True:
+                df2 = GetFromJson.getDataframeFreq(df2, self.timefreqBox2.currentText())
             if self.intervalsBtn2.isChecked() == True:
                 df2 = GetFromJson.setReadingIntervals(df2, self.spinbox2.value())
                 df2['readings'] = df2['readings'].astype(str)
 
-            df = GetFromJson.dataframeFromTime(df, self.datetime.dateTime().toMSecsSinceEpoch(), self.datetimeto.dateTime().toMSecsSinceEpoch())
             df2 = GetFromJson.dataframeFromTime(df2, self.datetime.dateTime().toMSecsSinceEpoch(), self.datetimeto.dateTime().toMSecsSinceEpoch())
-
+            
             #Fill table testing!
             if self.liftbutton.isChecked() == True:
                 df3 = GetFromJson.getBooleanAssociationRules(df, df2)
-                df3 = GetFromJson.ap.apriori(df3, 0.1)
-                df3 = GetFromJson.ap.allLift(df3,0.1)
+                df3 = GetFromJson.ap.apriori(df3, self.threshold.value())
+                df3 = GetFromJson.ap.allLift(df3, self.threshold.value())
                 model = PandasModel.PandasModel(df3)
                 self.tableWidget.setModel(model)
             if self.supportbutton.isChecked() == True:
                 df3 = GetFromJson.getBooleanAssociationRules(df, df2)
-                df3 = GetFromJson.ap.apriori(df3, 0.1)
+                df3 = GetFromJson.ap.apriori(df3, self.threshold.value())
                 model = PandasModel.PandasModel(df3)
                 self.tableWidget.setModel(model)
             if self.confidencebutton.isChecked() == True:
                 df3 = GetFromJson.getBooleanAssociationRules(df, df2)
-                df3 = GetFromJson.ap.apriori(df3, 0.1)
-                df3 = GetFromJson.ap.allConfidence(df3, 0.1)
+                df3 = GetFromJson.ap.apriori(df3, self.threshold.value())
+                df3 = GetFromJson.ap.allConfidence(df3, self.threshold.value())
                 model = PandasModel.PandasModel(df3)
                 self.tableWidget.setModel(model)
 
             #Plot the graph
-            axes=self.figure.add_subplot(111)
-            axes.cla()
-            axes.plot(df.index.values, df['readings'], 'r-', linewidth=1, linestyle='-', color='#E9B955')
+            
             axes.plot(df2.index.values, df2['readings'], 'r-', linewidth=1, linestyle='-', color='#2D4CC5')
             axes.set_title(self.mediaBox.currentText() + ' & ' + self.mediaBox2.currentText() + ' in rooms ' + self.roomBox.currentText() + ', ' + self.roomBox2.currentText())
             axes.set_xlabel('Time')
             axes.set_ylabel('Readings')
             self.canvas.draw()
         except:
-            print('didnt work bro')
+            print('didnt work 2 bro')
 
 class LoginWindow(QMainWindow):
     #Login Stylesheet
