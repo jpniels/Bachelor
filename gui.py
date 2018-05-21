@@ -4,8 +4,10 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 import GetFromJson
 import PandasModel
 
@@ -31,7 +33,6 @@ class mainWindow(QMainWindow):
         fileMenu = mainMenu.addMenu('File')
         editMenu = mainMenu.addMenu('Edit')
         viewMenu = mainMenu.addMenu('View')
-        searchMenu = mainMenu.addMenu('Search')
         toolsMenu = mainMenu.addMenu('Tools')
         helpMenu = mainMenu.addMenu('Help')
 
@@ -149,6 +150,7 @@ class App(QWidget):
             selection-color: #434C55;
             selection-background-color: #FFB36C;
             border: none;
+            width: 100%;
         }
         .QRadioButton {
             color: #fff;
@@ -206,6 +208,11 @@ class App(QWidget):
         sublayout.setAlignment(Qt.AlignTop)
         sublayout2.setAlignment(Qt.AlignTop)
         sublayout3.setAlignment(Qt.AlignTop)
+        subsublayout1 = QHBoxLayout()
+        subsublayout2 = QVBoxLayout()
+        subsublayout3 = QVBoxLayout()
+        subsublayout2.setAlignment(Qt.AlignTop)
+        subsublayout3.setAlignment(Qt.AlignTop)
         self.figure = plt.figure(figsize=(5,7))   
         self.canvas = FigureCanvas(self.figure)
         self.canvas.setMinimumWidth(800)
@@ -213,32 +220,38 @@ class App(QWidget):
         sublayout2.addWidget(self.canvas)
 
         self.threshold = QDoubleSpinBox(self)
+        self.threshold.setValue(0.1)
         self.threshold.valueChanged.connect(self.plot)
         self.threshold.setFixedWidth(250)
         self.threshold.setSuffix(' Threshold')
-        self.threshold.setRange(0, 5)
+        self.threshold.setRange(0.1, 5)
         self.threshold.setSingleStep(0.1)
-        sublayout2.addWidget(self.threshold)
+        subsublayout2.addWidget(self.threshold)
 
         #Support Button
         self.supportbutton = QRadioButton("Calculate Support", self)
         self.supportbutton.toggled.connect(self.aprioritoggled)
-        sublayout2.addWidget(self.supportbutton)
+        subsublayout2.addWidget(self.supportbutton)
 
         #Conviction Button
         self.confidencebutton = QRadioButton("Calculate Confidence", self)
         self.confidencebutton.toggled.connect(self.aprioritoggled)
-        sublayout2.addWidget(self.confidencebutton)
+        subsublayout2.addWidget(self.confidencebutton)
 
         #Lift Button
         self.liftbutton = QRadioButton("Calculate Lift", self)
         self.liftbutton.toggled.connect(self.aprioritoggled)
-        sublayout2.addWidget(self.liftbutton)
+        subsublayout2.addWidget(self.liftbutton)
+
+        #Conviction Button
+        self.convictionbutton = QRadioButton("Calculate Conviction", self)
+        self.convictionbutton.toggled.connect(self.aprioritoggled)
+        subsublayout2.addWidget(self.convictionbutton)
 
         #Lift Button
         self.allbutton = QRadioButton("Calculate All", self)
         self.allbutton.toggled.connect(self.aprioritoggled)
-        sublayout2.addWidget(self.allbutton)
+        subsublayout2.addWidget(self.allbutton)
 
         ####################################################################################################################
         ### Grid 1
@@ -270,8 +283,36 @@ class App(QWidget):
         #Outliers Radiobutton 1
         self.outlierBtn = QRadioButton("Remove Outliers", self)
         self.outlierBtn.setAutoExclusive(False)
-        self.outlierBtn.toggled.connect(self.plot)
+        self.outlierBtn.toggled.connect(self.outlierstoggled)
         sublayout.addWidget(self.outlierBtn)
+
+        #Outliers Selection Box
+        self.outliermethod = QComboBox(self)
+        self.outliermethod.hide()
+        self.outliermethod.addItem('Standard Deviation')
+        self.outliermethod.addItem('Interquartile Range')
+        self.outliermethod.currentTextChanged.connect(self.plot)
+        self.outliermethod.setFixedWidth(250)
+        sublayout.addWidget(self.outliermethod)
+
+        #Interolate Radiobutton 1
+        self.interpolateBtn = QRadioButton("Interpolate data", self)
+        self.interpolateBtn.setAutoExclusive(False)
+        self.interpolateBtn.toggled.connect(self.interpolatetoggled)
+        sublayout.addWidget(self.interpolateBtn)
+
+        #Interpolate Selection Box
+        self.interpolateBox = QComboBox(self)
+        self.interpolateBox.hide()
+        self.interpolateBox.addItem('5Min')
+        self.interpolateBox.addItem('15Min')
+        self.interpolateBox.addItem('30Min')
+        self.interpolateBox.addItem('45Min')
+        self.interpolateBox.addItem('1H')
+        self.interpolateBox.addItem('2H')
+        self.interpolateBox.currentTextChanged.connect(self.plot)
+        self.interpolateBox.setFixedWidth(250)
+        sublayout.addWidget(self.interpolateBox)
 
         #Intervals Radiobutton 1
         self.intervalsBtn = QRadioButton("Use intervals", self)
@@ -281,6 +322,7 @@ class App(QWidget):
 
         #Intervals spinbox 1
         self.spinbox = QSpinBox(self)
+        self.spinbox.setValue(1)
         self.spinbox.valueChanged.connect(self.plot)
         self.spinbox.hide()
         self.spinbox.setFixedWidth(250)
@@ -364,8 +406,36 @@ class App(QWidget):
         #Outliers Radiobutton 2
         self.outlierBtn2 = QRadioButton("Remove Outliers", self)
         self.outlierBtn2.setAutoExclusive(False)
-        self.outlierBtn2.toggled.connect(self.plot)
+        self.outlierBtn2.toggled.connect(self.outlierstoggled2)
         sublayout3.addWidget(self.outlierBtn2)
+
+        #Outliers Selection Box
+        self.outliermethod2 = QComboBox(self)
+        self.outliermethod2.hide()
+        self.outliermethod2.addItem('Standard Deviation', 1)
+        self.outliermethod2.addItem('Interquartile Range', 2)
+        self.outliermethod2.currentTextChanged.connect(self.plot)
+        self.outliermethod2.setFixedWidth(250)
+        sublayout3.addWidget(self.outliermethod2)
+
+        #Interpolate Radiobutton 2
+        self.interpolateBtn2 = QRadioButton("Interpolate data", self)
+        self.interpolateBtn2.setAutoExclusive(False)
+        self.interpolateBtn2.toggled.connect(self.interpolatetoggled2)
+        sublayout3.addWidget(self.interpolateBtn2)
+
+        #Interpolate Selection Box
+        self.interpolateBox2 = QComboBox(self)
+        self.interpolateBox2.hide()
+        self.interpolateBox2.addItem('5Min')
+        self.interpolateBox2.addItem('15Min')
+        self.interpolateBox2.addItem('30Min')
+        self.interpolateBox2.addItem('45Min')
+        self.interpolateBox2.addItem('1H')
+        self.interpolateBox2.addItem('2H')
+        self.interpolateBox2.currentTextChanged.connect(self.plot)
+        self.interpolateBox2.setFixedWidth(250)
+        sublayout.addWidget(self.interpolateBox2)
 
         #Intervals Radiobutton 2
         self.intervalsBtn2 = QRadioButton("Use intervals", self)
@@ -375,6 +445,7 @@ class App(QWidget):
 
         #Intervals spinbox 2
         self.spinbox2 = QSpinBox(self)
+        self.spinbox2.setValue(1)
         self.spinbox2.valueChanged.connect(self.plot)
         self.spinbox2.hide()
         self.spinbox2.setFixedWidth(250)
@@ -427,9 +498,15 @@ class App(QWidget):
 
         #Table Widget
         self.tableWidget = QTableView()
-        sublayout2.addWidget(self.tableWidget)
+        self.header = self.tableWidget.horizontalHeader()
+        self.header.setStretchLastSection(True)
+        subsublayout3.addWidget(self.tableWidget)
 
         #Add layouts to grid
+        subsublayout1.addLayout(subsublayout2)
+        subsublayout1.addLayout(subsublayout3)
+        sublayout2.addLayout(subsublayout1)
+
         subhorizontallayout.addLayout(sublayout)
         subhorizontallayout.addLayout(sublayout2)
         subhorizontallayout.addLayout(sublayout3)
@@ -461,6 +538,30 @@ class App(QWidget):
                 medialist2.append(v)
         self.mediaBox2.addItems(medialist2)
 
+    def outlierstoggled(self, state):
+        if state:
+            if self.mediaBox.currentText() != 'Media': 
+                self.outliermethod.show()
+                self.plot()
+            else:
+                self.outlierBtn.setChecked(False)
+                QMessageBox.warning(self, "Error", "You must pick a room and media before using this function.")
+        else:
+            self.outliermethod.hide()
+            self.plot()
+
+    def interpolatetoggled(self, state):
+        if state:
+            if self.mediaBox.currentText() != 'Media': 
+                self.interpolateBox.show()
+                self.plot()
+            else:
+                self.interpolateBtn.setChecked(False)
+                QMessageBox.warning(self, "Error", "You must pick a room and media before using this function.")
+        else:
+            self.interpolateBox.hide()
+            self.plot()
+
     def intervalstoggled(self, state):
         if state:
             if self.mediaBox.currentText() != 'Media': 
@@ -483,6 +584,30 @@ class App(QWidget):
                 QMessageBox.warning(self, "Error", "You must pick a room and media before using this function.")
         else:
             self.timefreqBox.hide()
+            self.plot()
+
+    def outlierstoggled2(self, state):
+        if state:
+            if self.mediaBox2.currentText() != 'Media': 
+                self.outliermethod2.show()
+                self.plot()
+            else:
+                self.outlierBtn2.setChecked(False)
+                QMessageBox.warning(self, "Error", "You must pick a room and media before using this function.")
+        else:
+            self.outliermethod2.hide()
+            self.plot()
+
+    def interpolatetoggled2(self, state):
+        if state:
+            if self.mediaBox2.currentText() != 'Media': 
+                self.interpolateBox2.show()
+                self.plot()
+            else:
+                self.interpolateBtn2.setChecked(False)
+                QMessageBox.warning(self, "Error", "You must pick a room and media before using this function.")
+        else:
+            self.interpolateBox2.hide()
             self.plot()
 
     def intervalstoggled2(self, state):
@@ -529,71 +654,76 @@ class App(QWidget):
     def plot(self):
         axes=self.figure.add_subplot(111)
         axes.cla()
-        try:
-            test = GetFromJson.getMediaIndex(self.mediaBox.currentText(), self.roomBox.currentText())
-            df = GetFromJson.getDataframe(test)
-            df = GetFromJson.getDataframeFreq(df, "1H")
-
-            if self.outlierBtn.isChecked() == True:
-                df = GetFromJson.removeOutliers(df)
-            if self.freqButton.isChecked() == True:
-                df = GetFromJson.getDataframeFreq(df, self.timefreqBox.currentText())
-            if self.intervalsBtn.isChecked() == True:
-                df = GetFromJson.setReadingIntervals(df, self.spinbox.value())
-                df['readings'] = df['readings'].astype(str)
-
-            
-            df = GetFromJson.dataframeFromTime(df, self.datetime.dateTime().toMSecsSinceEpoch(), self.datetimeto.dateTime().toMSecsSinceEpoch())
-            
-            axes.plot(df.index.values, df['readings'], 'r-', linewidth=1, linestyle='-', color='#E9B955')
-            self.canvas.draw()
         
-        except:
-            print('didnt work 1 bro')
+        test = GetFromJson.getMediaIndex(self.mediaBox.currentText(), self.roomBox.currentText())
+        df = GetFromJson.getDataframe(test)
+        df = GetFromJson.dataframeFromTime(df, self.datetime.dateTime().toMSecsSinceEpoch(), self.datetimeto.dateTime().toMSecsSinceEpoch())
 
-        try:
-            test2 = GetFromJson.getMediaIndex(self.mediaBox2.currentText(), self.roomBox2.currentText())
-            df2 = GetFromJson.getDataframe(test2)
-            df2 = GetFromJson.getDataframeFreq(df2, "1H")
-            
-            if self.outlierBtn2.isChecked() == True:
-                df2 = GetFromJson.removeOutliers(df2)
-            if self.freqButton2.isChecked() == True:
-                df2 = GetFromJson.getDataframeFreq(df2, self.timefreqBox2.currentText())
-            if self.intervalsBtn2.isChecked() == True:
-                df2 = GetFromJson.setReadingIntervals(df2, self.spinbox2.value())
-                df2['readings'] = df2['readings'].astype(str)
 
-            df2 = GetFromJson.dataframeFromTime(df2, self.datetime.dateTime().toMSecsSinceEpoch(), self.datetimeto.dateTime().toMSecsSinceEpoch())
-            
-            #Fill table testing!
-            if self.liftbutton.isChecked() == True:
-                df3 = GetFromJson.getBooleanAssociationRules(df, df2)
-                df3 = GetFromJson.ap.apriori(df3, self.threshold.value())
-                df3 = GetFromJson.ap.allLift(df3, self.threshold.value())
-                model = PandasModel.PandasModel(df3)
-                self.tableWidget.setModel(model)
-            if self.supportbutton.isChecked() == True:
-                df3 = GetFromJson.getBooleanAssociationRules(df, df2)
-                df3 = GetFromJson.ap.apriori(df3, self.threshold.value())
-                model = PandasModel.PandasModel(df3)
-                self.tableWidget.setModel(model)
-            if self.confidencebutton.isChecked() == True:
-                df3 = GetFromJson.getBooleanAssociationRules(df, df2)
-                df3 = GetFromJson.ap.apriori(df3, self.threshold.value())
-                df3 = GetFromJson.ap.allConfidence(df3, self.threshold.value())
-                model = PandasModel.PandasModel(df3)
-                self.tableWidget.setModel(model)
+        if self.outlierBtn.isChecked() == True:
+            if self.outliermethod.currentText() == 'Standard Deviation':
+                df = GetFromJson.removeOutliersSD(df)
+            else:
+                df = GetFromJson.removeOutliersIQR(df)
+        if self.interpolateBtn.isChecked() == True:
+            df = GetFromJson.createInterpolation(df, self.interpolateBox.currentText())
+        if self.freqButton.isChecked() == True:
+            df = GetFromJson.getDataframeFreq(df, self.timefreqBox.currentText())
+        if self.intervalsBtn.isChecked() == True:
+            df = GetFromJson.setReadingIntervals(df, self.spinbox.value())
+            df['readings'] = df['readings'].astype(str)
 
-            #Plot the graph
-            
-            axes.plot(df2.index.values, df2['readings'], 'r-', linewidth=1, linestyle='-', color='#2D4CC5')
-            axes.set_title(self.mediaBox.currentText() + ' & ' + self.mediaBox2.currentText() + ' in rooms ' + self.roomBox.currentText() + ', ' + self.roomBox2.currentText())
-            axes.set_xlabel('Time')
-            axes.set_ylabel('Readings')
-            self.canvas.draw()
-        except:
-            print('didnt work 2 bro')
+        axes.plot(df.index.values, df['readings'], 'r-', linewidth=1, linestyle='-', color='#E9B955')
+        self.canvas.draw()
+    
+        test2 = GetFromJson.getMediaIndex(self.mediaBox2.currentText(), self.roomBox2.currentText())
+        df2 = GetFromJson.getDataframe(test2)
+        df2 = GetFromJson.dataframeFromTime(df2, self.datetime.dateTime().toMSecsSinceEpoch(), self.datetimeto.dateTime().toMSecsSinceEpoch())
+        
+        if self.outlierBtn2.isChecked() == True:
+            if self.outliermethod2.currentText() == 'Standard Deviation':
+                df2 = GetFromJson.removeOutliersSD(df2)
+            else:
+                df2 = GetFromJson.removeOutliersIQR(df2)
+        if self.interpolateBtn2.isChecked() == True:
+            df2 = GetFromJson.createInterpolation(df2, self.interpolateBox2.currentText())
+        if self.freqButton2.isChecked() == True:
+            df2 = GetFromJson.getDataframeFreq(df2, self.timefreqBox2.currentText())
+        if self.intervalsBtn2.isChecked() == True:
+            df2 = GetFromJson.setReadingIntervals(df2, self.spinbox2.value())
+            df2['readings'] = df2['readings'].astype(str)
+        
+
+        #Plot the graph
+        
+        axes.plot(df2.index.values, df2['readings'], 'r-', linewidth=1, linestyle='-', color='#2D4CC5')
+        axes.set_title(self.mediaBox.currentText() + ' & ' + self.mediaBox2.currentText() + ' in rooms ' + self.roomBox.currentText() + ', ' + self.roomBox2.currentText())
+        axes.set_xlabel('Time')
+        axes.set_ylabel('Readings')
+
+
+        #Fill table testing!
+        if self.liftbutton.isChecked() == True:
+            df3 = GetFromJson.getBooleanAssociationRules(df, df2)
+            df3 = GetFromJson.ap.apriori(df3, 0.1)
+            df3 = GetFromJson.ap.allLift(df3, 0)
+            model = PandasModel.PandasModel(df3)
+            self.tableWidget.setModel(model)
+        if self.supportbutton.isChecked() == True:
+            df = GetFromJson.getBooleanAssociationRules(df, df2)
+            df = GetFromJson.ap.apriori(df, self.threshold.value())
+            model = PandasModel.PandasModel(df)
+            self.tableWidget.setModel(model)
+
+        if self.confidencebutton.isChecked() == True:
+            df3 = GetFromJson.getBooleanAssociationRules(df, df2)
+            df3 = GetFromJson.ap.apriori(df3, 0)
+            df3 = GetFromJson.ap.allConfidence(df3, self.threshold.value())
+            model = PandasModel.PandasModel(df3)
+            self.tableWidget.setModel(model)
+
+
+        self.canvas.draw()
 
 class LoginWindow(QMainWindow):
     #Login Stylesheet

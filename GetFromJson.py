@@ -26,7 +26,6 @@ def getDataframe(index):
 #Get a specified time frequency of the dataframe i.e '45Min'
 def getDataframeFreq(df, freq):
     df = df.resample(freq)['readings'].mean()
-   #df = df.groupby(pd.Grouper(key='timestamp', freq=freq))['readings'].mean()
     df = df.dropna()
     df = df.to_frame()
     return df
@@ -93,6 +92,9 @@ def getBooleanAssociationRules(df, df2):
 
 #Set interpolation
 def createInterpolation(df, interval):
+    df = df.resample(interval)['readings'].mean()
+    df = df.dropna()
+    df = df.to_frame()
     timerange = pd.date_range(df.index[0], df.index[-1], freq=interval)
     dfWithIntervals = timerange.union(df.index)
     dfWithIntervals = df.reindex(dfWithIntervals)
@@ -100,9 +102,15 @@ def createInterpolation(df, interval):
     return dfWithIntervals
 
 #Remove outliers
-def removeOutliers(df):
+def removeOutliersSD(df):
     df = df[df.apply(lambda x: np.abs(x - x.mean()) / x.std() < 3).all(axis=1)]
     return df
+
+def removeOutliersIQR(df):
+    Q1 = df['readings'].quantile(0.25)
+    Q3 = df['readings'].quantile(0.75)
+    IQR = (df['readings'] > Q1) & (df['readings'] < Q3)
+    return df.loc[IQR]
 
 def dataframeFromTime(df, fromtime, totime):
     df = df[df.index > pd.to_datetime(fromtime, unit='ms')]
@@ -118,16 +126,18 @@ df = getDataframe(test)
 df2 = getDataframe(test2)
 
 #Resample the dataframe into time intervals (specified i.e 2 hour) using the mean value
-df = getDataframeFreq(df, "2H")
-df2 = getDataframeFreq(df2, "2H")
+#df = getDataframeFreq(df, "2H")
+#df2 = getDataframeFreq(df2, "2H")
 
 #Create interpolating data every specified interval. Uses time interpolation
 df = createInterpolation(df, '30Min')
 df2 = createInterpolation(df2, '30Min')
 
 #Remove outliers from the dataframes
-df = removeOutliers(df)
-df2 = removeOutliers(df2)
+df = removeOutliersSD(df)
+df2 = removeOutliersSD(df2)
+
+
 
 #Set the readings into specified intervals. Using min/max and wanted # of intervals
 df = setReadingIntervals(df, 2)
