@@ -721,6 +721,14 @@ class App(QWidget):
             df3 = GetFromJson.ap.allConfidence(df3, self.threshold.value())
             model = PandasModel.PandasModel(df3)
             self.tableWidget.setModel(model)
+        
+        if self.convictionbutton.isChecked() == True:
+            df3 = GetFromJson.getBooleanAssociationRules(df, df2)
+            supp = GetFromJson.ap.apriori(df3, 0)
+            conf = GetFromJson.ap.allConfidence(supp, self.threshold.value())
+            df3 = GetFromJson.ap.allConviction(supp, conf)
+            model = PandasModel.PandasModel(df3)
+            self.tableWidget.setModel(model)
 
 
         self.canvas.draw()
