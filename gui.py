@@ -435,7 +435,7 @@ class App(QWidget):
         self.interpolateBox2.addItem('2H')
         self.interpolateBox2.currentTextChanged.connect(self.plot)
         self.interpolateBox2.setFixedWidth(250)
-        sublayout.addWidget(self.interpolateBox2)
+        sublayout3.addWidget(self.interpolateBox2)
 
         #Intervals Radiobutton 2
         self.intervalsBtn2 = QRadioButton("Use intervals", self)

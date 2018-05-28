@@ -148,5 +148,5 @@ df = getBooleanAssociationRules(df, df2)
 df = ap.apriori(df, 0.1)
 
 #Using the apriori dataframe, confidence, lift etc can be calculated
-#print(ap.allConfidence(df,0.1))
+#ap.allConfidence(df,0.1)
 #print(ap.allLift(df, 0.1))

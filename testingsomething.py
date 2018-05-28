@@ -56,7 +56,6 @@ for i in range(interval1):
     mylist.append(df['support'][start:startinterval2].values)
     start = startinterval2
     startinterval2 = startinterval2+intervalsomething
-print(mylist)
 mat = np.array(mylist)
 
 df = DataFrame((mat), index=Index, columns=Cols)
