@@ -61,7 +61,6 @@ def concatSets(supportSet,valueSet):
 
 #Calculate the confidence for all values
 def allConfidence(df, min_confidence):
-    print(df)
     df2 = df.loc[df['itemsets'].str.len() > 1] #df with 2 values
     df3 = df.loc[df['itemsets'].str.len() <= 1] #df with less than 2 values
 
@@ -79,7 +78,6 @@ def allConfidence(df, min_confidence):
                     conse.append(row['itemsets'])
                     conf.append(confvalue)
     confDf = pd.DataFrame(list(zip(ante, conse, conf)),columns=['antecedants','consequents', 'confidence']) #create dataframe with values
-    print(confDf)
     return confDf
 
 #Calculate the lift for all values

@@ -138,7 +138,6 @@ df = removeOutliersSD(df)
 df2 = removeOutliersSD(df2)
 
 
-
 #Set the readings into specified intervals. Using min/max and wanted # of intervals
 df = setReadingIntervals(df, 2)
 df2 = setReadingIntervals(df2, 15)
